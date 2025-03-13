@@ -2,13 +2,10 @@ import { View, Text, StyleSheet, Image } from "react-native";
 import React from "react";
 import Colors from "../Constants/Colors";
 
-const AniCard = ({ title }) => {
+const AniCard = ({ title, image }) => {
   return (
     <View style={styles.container}>
-      <Image
-        source={require(".././assets/trialImage.png")}
-        style={styles.img}
-      />
+      <Image source={{ uri: image }} style={styles.img} />
       <Text style={styles.title}>{title}</Text>
     </View>
   );
@@ -31,5 +28,6 @@ const styles = StyleSheet.create({
   },
   title: {
     color: Colors.secondary,
+    textAlign: "center",
   },
 });

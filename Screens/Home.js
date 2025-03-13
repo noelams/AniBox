@@ -19,9 +19,9 @@ const Home = ({ navigation }) => {
       <HeaderSection />
       <ScrollView style={styles.categoriesContainer}>
         <AniCategories categoryTitle={"Popular Anime This Month"} />
-        <AniCategories categoryTitle={"Suggested Anime For You"} />
+        {/* <AniCategories categoryTitle={"Suggested Anime For You"} />
         <AniCategories categoryTitle={"Top Ranking Anime"} />
-        <AniCategories categoryTitle={"My Favorites"} />
+        <AniCategories categoryTitle={"My Favorites"} /> */}
       </ScrollView>
       <StatusBar style="dark" />
     </SafeAreaView>

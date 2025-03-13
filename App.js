@@ -8,6 +8,7 @@ import Home from "./Screens/Home";
 import Profile from "./Screens/Profile";
 import Search from "./Screens/Search";
 import Colors from "./Constants/Colors";
+import { Provider } from "react-redux";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -62,3 +63,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
+
+//
