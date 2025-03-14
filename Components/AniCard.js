@@ -16,7 +16,7 @@ export default AniCard;
 const styles = StyleSheet.create({
   container: {
     width: 100,
-    height: 170,
+    height: 200,
     alignItems: "center",
     marginHorizontal: 10,
   },
@@ -29,5 +29,6 @@ const styles = StyleSheet.create({
   title: {
     color: Colors.secondary,
     textAlign: "center",
+    fontSize: 10,
   },
 });

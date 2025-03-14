@@ -24,7 +24,8 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     flexDirection: "row",
-    marginVertical: 40,
+    marginTop: 30,
+    marginBottom: 10,
     marginHorizontal: 20,
   },
   headerContent: {
