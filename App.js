@@ -8,10 +8,29 @@ import Home from "./Screens/Home";
 import Profile from "./Screens/Profile";
 import Search from "./Screens/Search";
 import Colors from "./Constants/Colors";
+import AniDetails from "./Screens/AniDetails";
 import { Provider } from "react-redux";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
+const HomeStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="HomeScreen"
+        component={Home}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="AniDetails"
+        component={AniDetails}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+};
+
 export default function App() {
   return (
     <NavigationContainer style={styles.container}>
@@ -25,7 +44,7 @@ export default function App() {
       >
         <Tab.Screen
           name="Home"
-          component={Home}
+          component={HomeStack}
           options={{
             tabBarIcon: ({ color }) => (
               <Ionicons name="home" size={20} color={color} />

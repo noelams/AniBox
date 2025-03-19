@@ -6,9 +6,10 @@ const HeaderSection = () => {
   return (
     <View style={styles.container}>
       <View style={styles.headerContent}>
-        <TouchableOpacity>
+        {/* <TouchableOpacity>
           <Ionicons name="menu" size={24} />
-        </TouchableOpacity>
+
+        </TouchableOpacity> */}
         <Image
           source={require("../assets/my_picture.jpg")}
           style={styles.coverPhoto}
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     flex: 1,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

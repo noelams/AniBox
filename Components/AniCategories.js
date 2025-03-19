@@ -36,7 +36,7 @@ const AniCategories = ({ categoryTitle }) => {
         return response.json();
       })
       .then((data) => {
-        // console.log(data);
+        // console.log("AniCategory data:", data);
         setAnime(data.data);
         setLoading(false);
       })
