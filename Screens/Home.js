@@ -24,7 +24,7 @@ const Home = ({ navigation }) => {
         <AniCategories categoryTitle={"Top Ranking Anime"} />
         <AniCategories categoryTitle={"Top Anime Movies"} />
       </ScrollView>
-      <StatusBar style="dark" />
+      <StatusBar style="auto" />
     </SafeAreaView>
   );
 };
