@@ -3,10 +3,10 @@ import React from "react";
 import Colors from "../Constants/Colors";
 import { useNavigation } from "@react-navigation/native";
 
-const AniCard = ({ title, image }) => {
+const AniCard = ({ title, image, id }) => {
   const navigation = useNavigation();
   const handleNavigate = () => {
-    navigation.navigate("AniDetails");
+    navigation.navigate("AniDetails", { id });
   };
   return (
     <TouchableOpacity style={styles.container} onPress={handleNavigate}>
