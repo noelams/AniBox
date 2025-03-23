@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -13,10 +13,14 @@ import { EXPO_MAL_BASE_URL, EXPO_PERSONAL_CLIENT_ID } from "@env";
 import Colors from "../Constants/Colors";
 import AppText from "../Components/AppText";
 import AniCategories from "../Components/AniCategories";
+import WatchlistContext from "../Context/WatchlistContext";
 
-const AniDetails = ({ route }) => {
+const AniDetails = ({ route, navigation }) => {
   const id = route.params.id;
   const [AnimeData, setAnimeData] = useState([]);
+  const { watchlist, toggleWatchlist } = useContext(WatchlistContext);
+
+  const isInWatchlist = watchlist.some((item) => item.id === id);
 
   useEffect(() => {
     const apiUrl = `${EXPO_MAL_BASE_URL}/anime/${id}?fields=id,title,main_picture,start_date,end_date,synopsis,mean,rank,popularity,nsfw,created_at,updated_at,media_type,status,genres,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,recommendations,studios,statistics`;
@@ -119,15 +123,31 @@ const AniDetails = ({ route }) => {
       </View>
 
       <View style={styles.ratingContainer}>
-        <TouchableOpacity style={styles.watchlistBtn}>
+        <TouchableOpacity
+          style={styles.watchlistBtn}
+          onPress={() => toggleWatchlist(AnimeData)}
+        >
           {/* <FontAwesome name="line-chart" size={30} color="black" /> */}
-          <AppText title="Add to Watchlist" style={styles.watchlistText} />
+          <AppText
+            title={isInWatchlist ? "Added to Watchlist" : "Add to Watchlist"}
+            style={styles.watchlistText}
+          />
         </TouchableOpacity>
+
         <View>
           <AppText title={"Ratings"} style={styles.ratingHeader} />
           <AppText title={mean / 2} style={styles.rating} />
         </View>
       </View>
+
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate("MyWatchlist");
+        }}
+        style={styles.gotoWatchlist}
+      >
+        <AppText title={"Go to Watchlist"} style={styles.gotoWatchlistText} />
+      </TouchableOpacity>
 
       <View style={{ height: 1, backgroundColor: "gray", marginTop: 30 }} />
       <AniCategories
@@ -200,6 +220,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   watchlistBtn: {
+    marginVertical: 10,
+    backgroundColor: Colors.secondary,
+    padding: 8,
+    width: "30%",
+    borderRadius: 7,
+    alignItems: "center",
+  },
+  gotoWatchlist: {
     marginVertical: 10,
     backgroundColor: Colors.secondary,
     padding: 8,

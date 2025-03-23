@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -9,7 +9,8 @@ import Profile from "./Screens/Profile";
 import Search from "./Screens/Search";
 import Colors from "./Constants/Colors";
 import AniDetails from "./Screens/AniDetails";
-import { Provider } from "react-redux";
+import MyWatchlist from "./Screens/MyWatchlist";
+import { WatchlistProvider } from "./Context/WatchlistContext";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -27,50 +28,57 @@ const HomeStack = () => {
         component={AniDetails}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="MyWatchlist"
+        component={MyWatchlist}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };
 
 export default function App() {
   return (
-    <NavigationContainer style={styles.container}>
-      <Tab.Navigator
-        screenOptions={{
-          tabBarActiveTintColor: "#E9A6A6",
-          tabBarInactiveTintColor: "#8F8E9A",
-          tabBarStyle: { backgroundColor: Colors.backgroundColor },
-          headerShown: false,
-        }}
-      >
-        <Tab.Screen
-          name="Home"
-          component={HomeStack}
-          options={{
-            tabBarIcon: ({ color }) => (
-              <Ionicons name="home" size={20} color={color} />
-            ),
+    <WatchlistProvider>
+      <NavigationContainer style={styles.container}>
+        <Tab.Navigator
+          screenOptions={{
+            tabBarActiveTintColor: "#E9A6A6",
+            tabBarInactiveTintColor: "#8F8E9A",
+            tabBarStyle: { backgroundColor: Colors.backgroundColor },
+            headerShown: false,
           }}
-        />
-        <Tab.Screen
-          name="Search"
-          component={Search}
-          options={{
-            tabBarIcon: ({ color }) => (
-              <Ionicons name="search" size={20} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Profile"
-          component={Profile}
-          options={{
-            tabBarIcon: ({ color }) => (
-              <MaterialIcons name="person" size={20} color={color} />
-            ),
-          }}
-        />
-      </Tab.Navigator>
-    </NavigationContainer>
+        >
+          <Tab.Screen
+            name="Home"
+            component={HomeStack}
+            options={{
+              tabBarIcon: ({ color }) => (
+                <Ionicons name="home" size={20} color={color} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Search"
+            component={Search}
+            options={{
+              tabBarIcon: ({ color }) => (
+                <Ionicons name="search" size={20} color={color} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Profile"
+            component={Profile}
+            options={{
+              tabBarIcon: ({ color }) => (
+                <MaterialIcons name="person" size={20} color={color} />
+              ),
+            }}
+          />
+        </Tab.Navigator>
+      </NavigationContainer>
+    </WatchlistProvider>
   );
 }
 
