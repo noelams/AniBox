@@ -48,8 +48,6 @@ const AniCategories = ({ categoryTitle, animeObject }) => {
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log("data", data.data);
-
           setAnime(data.data);
           setLoading(false);
         })
