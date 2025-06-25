@@ -22,22 +22,26 @@ const RootNavigator = () => {
     checkAuth();
   }, []);
 
+  const logoutUser = () => {};
+
   if (IsLoading) {
     return <ActivityIndicator size={"large"} />;
   }
 
   return (
     <NavigationContainer style={styles.container}>
-      {UserToken ? <MainNavigator /> : <AuthNavigator />}
+      {!UserToken ? <MainNavigator /> : <AuthNavigator />}
     </NavigationContainer>
   );
 };
 
 export default function App() {
   return (
-    <WatchlistProvider>
-      <RootNavigator />
-    </WatchlistProvider>
+    <AuthProvider>
+      <WatchlistProvider>
+        <RootNavigator />
+      </WatchlistProvider>
+    </AuthProvider>
   );
 }
 

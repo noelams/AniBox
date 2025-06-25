@@ -7,7 +7,9 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import AniCard from "./AniCard";
-import { EXPO_MAL_BASE_URL, EXPO_PERSONAL_CLIENT_ID } from "@env";
+import Constants from "expo-constants";
+
+const { malApiUrl, clientId } = Constants.expoConfig.extra;
 
 const AniCategories = ({ categoryTitle, animeObject }) => {
   const [Anime, setAnime] = useState([]);
@@ -30,19 +32,19 @@ const AniCategories = ({ categoryTitle, animeObject }) => {
       // For ranking categories, use the existing logic:
       let apiUrl = "";
       if (categoryTitle === "Top Ranking Anime") {
-        apiUrl = `${EXPO_MAL_BASE_URL}/anime/ranking?ranking_type=all&limit=6`;
+        apiUrl = `${malApiUrl}/anime/ranking?ranking_type=all&limit=6`;
       } else if (categoryTitle === "Top Upcoming Anime") {
-        apiUrl = `${EXPO_MAL_BASE_URL}/anime/ranking?ranking_type=upcoming&limit=6`;
+        apiUrl = `${malApiUrl}/anime/ranking?ranking_type=upcoming&limit=6`;
       } else if (categoryTitle === "Top Airing Anime") {
-        apiUrl = `${EXPO_MAL_BASE_URL}/anime/ranking?ranking_type=airing&limit=6`;
+        apiUrl = `${malApiUrl}/anime/ranking?ranking_type=airing&limit=6`;
       } else if (categoryTitle === "Top Anime Movies") {
-        apiUrl = `${EXPO_MAL_BASE_URL}/anime/ranking?ranking_type=movie&limit=6`;
+        apiUrl = `${malApiUrl}/anime/ranking?ranking_type=movie&limit=6`;
       }
 
       fetch(apiUrl, {
         method: "GET",
         headers: {
-          "X-MAL-CLIENT-ID": EXPO_PERSONAL_CLIENT_ID,
+          "X-MAL-CLIENT-ID": clientId,
           "content-type": "application/json",
         },
       })
