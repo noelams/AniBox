@@ -9,11 +9,13 @@ import {
   ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { EXPO_MAL_BASE_URL, EXPO_PERSONAL_CLIENT_ID } from "@env";
 import Colors from "../Constants/Colors";
 import AppText from "../Components/AppText";
 import AniCategories from "../Components/AniCategories";
 import WatchlistContext from "../Context/WatchlistContext";
+import Constants from "expo-constants";
+
+const { malApiUrl, clientId } = Constants.expoConfig.extra;
 
 const AniDetails = ({ route, navigation }) => {
   const id = route.params.id;
@@ -23,11 +25,11 @@ const AniDetails = ({ route, navigation }) => {
   const isInWatchlist = watchlist.some((item) => item.id === id);
 
   useEffect(() => {
-    const apiUrl = `${EXPO_MAL_BASE_URL}/anime/${id}?fields=id,title,main_picture,start_date,end_date,synopsis,mean,rank,popularity,nsfw,created_at,updated_at,media_type,status,genres,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,recommendations,studios,statistics`;
+    const apiUrl = `${malApiUrl}/anime/${id}?fields=id,title,main_picture,start_date,end_date,synopsis,mean,rank,popularity,nsfw,created_at,updated_at,media_type,status,genres,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,recommendations,studios,statistics`;
     fetch(apiUrl, {
       method: "GET",
       headers: {
-        "X-MAL-CLIENT-ID": `${EXPO_PERSONAL_CLIENT_ID}`,
+        "X-MAL-CLIENT-ID": `${clientId}`,
         "content-type": "application/json",
       },
     })

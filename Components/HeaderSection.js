@@ -1,15 +1,10 @@
-import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, StyleSheet, Image } from "react-native";
 import React from "react";
 
 const HeaderSection = () => {
   return (
     <View style={styles.container}>
       <View style={styles.headerContent}>
-        {/* <TouchableOpacity>
-          <Ionicons name="menu" size={24} />
-
-        </TouchableOpacity> */}
         <Image
           source={require("../assets/my_picture.jpg")}
           style={styles.coverPhoto}
