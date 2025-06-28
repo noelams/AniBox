@@ -21,16 +21,13 @@ const RootNavigator = () => {
     };
     checkAuth();
   }, []);
-
-  const logoutUser = () => {};
-
   if (IsLoading) {
     return <ActivityIndicator size={"large"} />;
   }
 
   return (
     <NavigationContainer style={styles.container}>
-      {!UserToken ? <MainNavigator /> : <AuthNavigator />}
+      {UserToken ? <MainNavigator /> : <AuthNavigator />}
     </NavigationContainer>
   );
 };

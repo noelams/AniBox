@@ -91,6 +91,9 @@ const AniCategories = ({ categoryTitle, animeObject }) => {
 export default AniCategories;
 
 const styles = StyleSheet.create({
+  container: {
+    minHeight: 200,
+  },
   categoryTitle: {
     fontSize: 18,
     fontWeight: "600",

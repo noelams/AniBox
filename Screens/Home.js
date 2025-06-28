@@ -18,7 +18,6 @@ const Home = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <HeaderSection />
       <ScrollView style={styles.categoriesContainer}>
-        {/* <AniCategories categoryTitle={"Popular Anime This Month"} /> */}
         <AniCategories categoryTitle={"Top Upcoming Anime"} />
         <AniCategories categoryTitle={"Top Airing Anime"} />
         <AniCategories categoryTitle={"Top Ranking Anime"} />

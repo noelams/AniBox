@@ -14,7 +14,6 @@ import AppText from "../Components/AppText";
 import AniCategories from "../Components/AniCategories";
 import WatchlistContext from "../Context/WatchlistContext";
 import Constants from "expo-constants";
-
 const { malApiUrl, clientId } = Constants.expoConfig.extra;
 
 const AniDetails = ({ route, navigation }) => {
@@ -45,8 +44,6 @@ const AniDetails = ({ route, navigation }) => {
       });
   }, []);
 
-  if (!AnimeData) return <Text>Loading</Text>;
-
   const {
     title,
     main_picture,
@@ -75,6 +72,8 @@ const AniDetails = ({ route, navigation }) => {
     studios,
     statistics,
   } = AnimeData;
+
+  if (!AnimeData) return <Text>Loading</Text>;
 
   return (
     <ScrollView style={styles.container}>
