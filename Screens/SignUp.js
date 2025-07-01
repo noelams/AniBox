@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useContext } from "react";
 import AuthForm from "../Components/AuthForm";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Colors from "../Constants/Colors";
 import Constants from "expo-constants";
+import { AuthContext } from "../Context/AuthContext";
 
 const { backendUrl } = Constants.expoConfig.extra;
 
 const SignUp = ({ navigation }) => {
+  const { signIn } = useContext(AuthContext);
   const fields = [
     {
       name: "username",
@@ -45,14 +47,17 @@ const SignUp = ({ navigation }) => {
   ];
 
   const handleSignUp = async (formData) => {
+    // console.log("backend url:", backendUrl);
     const { confirmPassword, ...dataToSend } = formData;
-    const sendData = await fetch(`${backendUrl}/api/auth/signup`, {
+    console.log(dataToSend);
+    const sendData = await fetch(`${backendUrl}:5000/api/auth/signup`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(dataToSend),
     });
     const response = await sendData.json();
     console.log(response);
+    signIn(response.token);
     if (!sendData.ok) throw new Error(response.message || "Signup failed");
   };
 

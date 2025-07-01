@@ -7,13 +7,15 @@ import {
   ScrollView,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useContext } from "react";
 import Colors from "../Constants/Colors";
 import AniCard from "../Components/AniCard";
 import HeaderSection from "../Components/HeaderSection";
 import AniCategories from "../Components/AniCategories";
+import { AuthContext } from "../Context/AuthContext";
 
 const Home = ({ navigation }) => {
+  const { signOut } = useContext(AuthContext);
   return (
     <SafeAreaView style={styles.container}>
       <HeaderSection />
@@ -22,6 +24,12 @@ const Home = ({ navigation }) => {
         <AniCategories categoryTitle={"Top Airing Anime"} />
         <AniCategories categoryTitle={"Top Ranking Anime"} />
         <AniCategories categoryTitle={"Top Anime Movies"} />
+        <Button
+          title="Log Out"
+          onPress={() => {
+            signOut();
+          }}
+        />
       </ScrollView>
       <StatusBar style="auto" />
     </SafeAreaView>
