@@ -6,6 +6,7 @@ import AuthNavigator from "./AppNavigation/AuthNavigator";
 import { AuthContext, AuthProvider } from "./Context/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState, useContext } from "react";
+import { StatusBar } from "expo-status-bar";
 
 const RootNavigator = () => {
   const [IsLoading, setIsLoading] = useState(true);

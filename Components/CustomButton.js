@@ -26,7 +26,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  buttonPressed: {},
+  buttonPressed: {
+    opacity: 0.8,
+  },
   buttonText: {
     fontSize: 16,
     fontWeight: "bold",

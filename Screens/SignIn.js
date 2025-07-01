@@ -1,114 +1,62 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  SafeAreaView,
-  TouchableOpacity,
-  Image,
-} from "react-native";
-import React, { useContext, useState } from "react";
-import { AuthContext } from "../Context/AuthContext";
-import CustomButton from "../Components/CustomButton";
-import CustomInput from "../Components/CustomInput";
+import React, { useContext } from "react";
+import AuthForm from "../Components/AuthForm";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Colors from "../Constants/Colors";
-import CustomTitle from "../Components/CustomTitle";
+import { AuthContext } from "../Context/AuthContext";
+import Constants from "expo-constants";
+
+const { backendUrl } = Constants.expoConfig.extra;
+
 const SignIn = ({ navigation }) => {
   const { signIn } = useContext(AuthContext);
-  // const [credentials, setCrdentials] = useState({ email: "", password: "" });
 
-  const handleSignIn = async () => {
-    const token = "vybsibsicbsdvi";
-    await signIn(token);
+  const fields = [
+    {
+      name: "email",
+      placeholder: "Email",
+      icon: <Ionicons name="mail" color={Colors.placeholder} size={16} />,
+    },
+    {
+      name: "password",
+      placeholder: "Password",
+      isPassword: true,
+      icon: (
+        <Ionicons
+          name="lock-closed-outline"
+          color={Colors.placeholder}
+          size={16}
+        />
+      ),
+    },
+  ];
+
+  const handleLogin = async (formData) => {
+    const sendData = await fetch(`${backendUrl}/api/auth/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    const response = await sendData.json();
+    console.log(response);
+    if (!sendData.ok) throw new Error(response.message || "Login failed");
+
+    await signIn(response.token); // or however you're handling tokens
   };
-  const handleForgotPassword = () => {
-    //coming soon
-  };
+
   return (
-    <SafeAreaView style={styles.appContainer}>
-      <Image source={"../assets/my_picture.jpg"} style={styles.imageStyles} />
-      <View style={styles.container}>
-        <CustomTitle title="Login" subTitle={"Please sign in to continue"} />
-        <CustomInput
-          icon={<Ionicons name="mail" color={Colors.placeholder} size={16} />}
-          isPassword={true}
-          placeholder="Email"
-          onChangeText={(text) =>
-            setFormData((prev) => {
-              return { ...prev, password: text };
-            })
-          }
-        />
-        <CustomInput
-          icon={
-            <Ionicons
-              name="lock-closed-outline"
-              color={Colors.placeholder}
-              size={16}
-            />
-          }
-          isPassword={true}
-          placeholder="Password"
-          onChangeText={(text) =>
-            setFormData((prev) => {
-              return { ...prev, password: text };
-            })
-          }
-        />
-
-        <TouchableOpacity
-          onPress={handleForgotPassword}
-          style={styles.forgotPassword}
-        >
-          <Text style={styles.forgotPasswordText}> Forgot Password?</Text>
-        </TouchableOpacity>
-        <CustomButton title={"Login"} />
-        <View style={styles.CTAcontainer}>
-          <Text style={styles.CTAtext}>Don't have an account? Go to the </Text>
-          <TouchableOpacity onPress={() => navigation.navigate("Sign Up")}>
-            <Text style={styles.goToLogin}>Sign Up Page</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </SafeAreaView>
+    <AuthForm
+      title="Login"
+      subTitle="Please sign in to continue"
+      fields={fields}
+      onSubmit={handleLogin}
+      navigation={navigation}
+      alternateText="Don't have an account?"
+      alternateActionLabel="Sign Up Page"
+      alternateActionTarget="Sign Up"
+      image={require("../assets/anibox-auth.png")}
+    />
   );
 };
 
 export default SignIn;
-
-const styles = StyleSheet.create({
-  appContainer: {
-    flex: 1,
-    backgroundColor: Colors.backgroundColor,
-    justifyContent: "center",
-  },
-  container: {
-    paddingHorizontal: 20,
-    flex: 1,
-  },
-  imageStyles: {
-    width: "100%",
-    height: 100,
-    backgroundColor: "#ffffff",
-    flex: 1,
-  },
-  forgotPassword: {
-    alignSelf: "flex-end",
-  },
-  forgotPasswordText: {
-    color: Colors.accent3,
-  },
-  CTAcontainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 10,
-    alignSelf: "center",
-  },
-  CTAtext: {
-    color: Colors.secondary,
-  },
-  goToLogin: {
-    color: Colors.accent3,
-    fontWeight: "bold",
-  },
-});
