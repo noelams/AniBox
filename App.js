@@ -9,26 +9,15 @@ import { useEffect, useState, useContext } from "react";
 import { StatusBar } from "expo-status-bar";
 
 const RootNavigator = () => {
-  const [IsLoading, setIsLoading] = useState(true);
-  const [UserToken, setUserToken] = useState(null);
+  const { token, IsLoading } = useContext(AuthContext);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = await AsyncStorage.getItem("token");
-      if (token) {
-        setUserToken(token);
-      }
-      setIsLoading(false);
-    };
-    checkAuth();
-  }, []);
   if (IsLoading) {
     return <ActivityIndicator size={"large"} />;
   }
 
   return (
     <NavigationContainer style={styles.container}>
-      {UserToken ? <MainNavigator /> : <AuthNavigator />}
+      {token ? <MainNavigator /> : <AuthNavigator />}
     </NavigationContainer>
   );
 };

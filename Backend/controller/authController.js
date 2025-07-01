@@ -63,6 +63,7 @@ exports.loginUser = async (req, res) => {
         username: user.username,
         email: user.email,
       },
+      token,
     });
   } catch (error) {
     console.error("Error:", error);
