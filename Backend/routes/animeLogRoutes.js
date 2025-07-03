@@ -52,6 +52,19 @@ router.put("/:id", verifyToken, async (req, res) => {
         .status(404)
         .json({ message: "Log not found or not authorized" });
     res.json(updated);
+    const { status, year, limit, sort } = req.query;
+    let query = { userId };
+
+    if (status) query.status = status;
+    if (year) {
+      const start = new Date(`${year}-01-01`);
+      const end = new Date(`${parseInt(year) + 1}-01-01`);
+      query.createdAt = { $gte: start, $lt: end };
+    }
+
+    let logs = await AnimeLog.find(query)
+      .sort(sort === "desc" ? { createdAt: -1 } : {})
+      .limit(limit ? parseInt(limit) : 0);
   } catch (err) {
     res.status(500).json({
       mesage: "Error updating log",

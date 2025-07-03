@@ -31,7 +31,7 @@ const SignIn = ({ navigation }) => {
   ];
 
   const handleLogin = async (formData) => {
-    const sendData = await fetch(`${backendUrl}:5000/api/auth/login`, {
+    const sendData = await fetch(`${backendUrl}/api/auth/login`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(formData),

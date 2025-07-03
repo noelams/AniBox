@@ -1,0 +1,24 @@
+import { StyleSheet, Text, View } from "react-native";
+import React from "react";
+import AppText from "./AppText";
+
+const SummaryBox = ({ value, title, color }) => {
+  return (
+    <View style={styles.container}>
+      <Text style={{ color: color, fontWeight: "bold", fontSize: 26 }}>
+        {value}
+      </Text>
+      <AppText title={title} style={{ fontSize: 14 }} />
+    </View>
+  );
+};
+
+export default SummaryBox;
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    marginVertical: 30,
+    marginHorizontal: 10,
+  },
+});
