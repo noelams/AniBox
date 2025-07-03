@@ -50,7 +50,7 @@ const SignUp = ({ navigation }) => {
     // console.log("backend url:", backendUrl);
     const { confirmPassword, ...dataToSend } = formData;
     console.log(dataToSend);
-    const sendData = await fetch(`${backendUrl}:5000/api/auth/signup`, {
+    const sendData = await fetch(`${backendUrl}/api/auth/signup`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(dataToSend),

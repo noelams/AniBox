@@ -7,9 +7,10 @@ import { AuthContext, AuthProvider } from "./Context/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState, useContext } from "react";
 import { StatusBar } from "expo-status-bar";
+import Colors from "./Constants/Colors";
 
 const RootNavigator = () => {
-  const { token, IsLoading } = useContext(AuthContext);
+  const { userToken, IsLoading } = useContext(AuthContext);
 
   if (IsLoading) {
     return <ActivityIndicator size={"large"} />;
@@ -17,7 +18,7 @@ const RootNavigator = () => {
 
   return (
     <NavigationContainer style={styles.container}>
-      {token ? <MainNavigator /> : <AuthNavigator />}
+      {userToken ? <MainNavigator /> : <AuthNavigator />}
     </NavigationContainer>
   );
 };
@@ -35,7 +36,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.backgroundColor,
     alignItems: "center",
     justifyContent: "center",
   },

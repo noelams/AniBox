@@ -12,4 +12,8 @@ router.post("/signup", registerUser);
 
 router.post("/login", loginUser);
 
+router.get("/profile", verifyToken, (req, res) => {
+  res.status(200).json({ user: req.user });
+});
+
 module.exports = router;
