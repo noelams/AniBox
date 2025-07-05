@@ -25,14 +25,33 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 router.get("/", verifyToken, async (req, res) => {
-  const { status, animeId } = req.query;
+  const userId = req.user._id;
+  const { status, animeId, year, limit, sort } = req.query;
 
   try {
-    const query = { userId: req.user._id };
+    const query = { userId };
+
     if (status) query.status = status;
     if (animeId) query.animeId = animeId;
-    const logs = await AnimeLog.find(query).sort({ createdAt: -1 });
-    res.json(logs);
+    if (year) {
+      const start = new Date(`${year}-01-01`);
+      const end = new Date(`${parseInt(year) + 1}-01-01`);
+      query.createdAt = { $gte: start, $lt: end };
+    }
+
+    let logsQuery = AnimeLog.find(query);
+
+    if (sort === "desc") {
+      logsQuery = logsQuery.sort({ createdAt: -1 });
+    }
+
+    if (limit) {
+      logsQuery = logsQuery.limit(parseInt(limit));
+    }
+
+    const logs = await logsQuery;
+
+    res.status(200).json(logs);
   } catch (err) {
     res
       .status(500)
@@ -52,19 +71,6 @@ router.put("/:id", verifyToken, async (req, res) => {
         .status(404)
         .json({ message: "Log not found or not authorized" });
     res.json(updated);
-    const { status, year, limit, sort } = req.query;
-    let query = { userId };
-
-    if (status) query.status = status;
-    if (year) {
-      const start = new Date(`${year}-01-01`);
-      const end = new Date(`${parseInt(year) + 1}-01-01`);
-      query.createdAt = { $gte: start, $lt: end };
-    }
-
-    let logs = await AnimeLog.find(query)
-      .sort(sort === "desc" ? { createdAt: -1 } : {})
-      .limit(limit ? parseInt(limit) : 0);
   } catch (err) {
     res.status(500).json({
       mesage: "Error updating log",

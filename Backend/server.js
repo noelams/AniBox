@@ -3,6 +3,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const animeLogRoutes = require("./routes/animeLogRoutes");
+const favoritesRoutes = require("./routes/favoritesRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 
 dotenv.config();
 
@@ -30,6 +32,8 @@ const authRoutes = require("./routes/authRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/anime-log", animeLogRoutes);
+app.use("/api/favorites", favoritesRoutes);
+app.use("/api/profile", profileRoutes);
 
 const PORT = process.env.PORT || 5000;
 
