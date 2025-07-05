@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const verifyToken = require("../middleware/authMiddleware");
-const Favorite = require("../models/Favorite");
+const Favorite = require("../models/Favorites");
 
 router.post("/", verifyToken, async (req, res) => {
   const { animeId } = req.body;
