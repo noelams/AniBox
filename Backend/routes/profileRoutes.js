@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const verifyToken = require("../middleware/authMiddleware");
 const AnimeLog = require("../models/AnimeLog");
-const Favorite = require("../models/Favorite");
+const Favorites = require("../models/Favorites");
 
-router.get("/profile", verifyToken, async (req, res) => {
+router.get("/", verifyToken, async (req, res) => {
   const userId = req.user._id;
   const currentYear = new Date().getFullYear();
   const startOfYear = new Date(`${currentYear}-01-01`);
@@ -25,8 +25,8 @@ router.get("/profile", verifyToken, async (req, res) => {
         status: "watched",
         createdAt: { $gte: startOfYear, $lt: startOfNextYear },
       }),
-      Favorite.find({ userId }),
-      Favorite.find({ userId }).sort({ addedAt: -1 }).limit(4),
+      Favorites.find({ userId }),
+      Favorites.find({ userId }).sort({ addedAt: -1 }).limit(4),
     ]);
 
     res.status(200).json({
