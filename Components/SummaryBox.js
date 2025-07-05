@@ -6,7 +6,7 @@ const SummaryBox = ({ value, title, color }) => {
   return (
     <View style={styles.container}>
       <Text style={{ color: color, fontWeight: "bold", fontSize: 26 }}>
-        {value}
+        {value ? value : 0}
       </Text>
       <AppText title={title} style={{ fontSize: 14 }} />
     </View>
