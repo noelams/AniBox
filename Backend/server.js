@@ -29,7 +29,9 @@ app.get("/", (req, res) => {
 });
 
 const authRoutes = require("./routes/authRoutes");
+const uploadRoute = require("./routes/upload");
 
+app.use("/api", uploadRoute);
 app.use("/api/auth", authRoutes);
 app.use("/api/anime-log", animeLogRoutes);
 app.use("/api/favorites", favoritesRoutes);

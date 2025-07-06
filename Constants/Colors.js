@@ -6,6 +6,7 @@ const Colors = {
   accent2: "#8f8e9a",
   placeholder: "#c4c4c4",
   accent3: "#9c4a8b",
+  accent4: "#6865cd",
 };
 
 export default Colors;

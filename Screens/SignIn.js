@@ -4,6 +4,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import Colors from "../Constants/Colors";
 import { AuthContext } from "../Context/AuthContext";
 import Constants from "expo-constants";
+import UserContext from "../Context/UserContext";
 
 const { backendUrl } = Constants.expoConfig.extra;
 
@@ -39,9 +40,16 @@ const SignIn = ({ navigation }) => {
 
     const response = await sendData.json();
     console.log(response);
+    const { saveUserInfo } = useContext(UserContext);
+    saveUserInfo({
+      username: response.username,
+      email: response.email,
+      profileImage: response.profileImage,
+    });
+
     if (!sendData.ok) throw new Error(response.message || "Login failed");
 
-    await signIn(response.token); // or however you're handling tokens
+    await signIn(response.token);
   };
 
   return (

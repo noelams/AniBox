@@ -8,6 +8,7 @@ import Constants from "expo-constants";
 import { AuthContext } from "../Context/AuthContext";
 import AppText from "../Components/AppText";
 import AniCard from "../Components/AniCard";
+import UserContext from "../Context/UserContext";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState({});
@@ -20,6 +21,7 @@ const Profile = () => {
 
   const { userToken } = useContext(AuthContext);
   const { backendUrl, malApiUrl, clientId } = Constants.expoConfig.extra;
+  const { userInfo } = useContext(UserContext);
 
   // Unified image picker
   const handleImageChange = async (onPick) => {
@@ -38,6 +40,52 @@ const Profile = () => {
 
     if (!result.canceled) {
       onPick(result.assets[0].uri);
+      onPick(uri); // Update preview immediately
+      uploadImageToBackend(uri, type); // Upload to backend
+    }
+  };
+
+  const uploadImageToBackend = async (imageUri, type = "profile") => {
+    try {
+      const formData = new FormData();
+
+      // Get the filename and extension
+      const fileName = imageUri.split("/").pop();
+      const match = /\.(\w+)$/.exec(fileName);
+      const fileType = match ? `image/${match[1]}` : `image`;
+
+      formData.append("image", {
+        uri: imageUri,
+        name: fileName,
+        type: fileType,
+      });
+
+      formData.append("userId", profileData._id); // You need this from getProfileData()
+
+      const response = await fetch(`${backendUrl}/api/upload-profile`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.imageUrl) {
+        if (type === "profile") {
+          setProfileImage(data.imageUrl);
+        } else {
+          setCoverImage(data.imageUrl);
+        }
+
+        // You can optionally refresh profileData:
+        getProfileData();
+      } else {
+        console.error("Upload failed", data);
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
     }
   };
 
@@ -155,11 +203,11 @@ const Profile = () => {
   return (
     <SafeAreaView style={styles.container}>
       <CoverPhoto
-        onChangeCover={() => handleImageChange(setCoverImage)}
+        onChangeCover={() => handleImageChange(setCoverImage, "cover")}
         coverImage={coverImage}
-        onChangeProfile={() => handleImageChange(setProfileImage)}
+        onChangeProfile={() => handleImageChange(setProfileImage, "profile")}
         profileImage={profileImage}
-        displayName={"Noel"}
+        displayName={userInfo?.username}
       />
 
       <View style={styles.watchSummaryContainer}>
@@ -186,7 +234,7 @@ const Profile = () => {
       <View style={styles.favoritesContainer}>
         <View style={styles.categoryContainer}>
           <AppText
-            title={"Noel's Favorites"}
+            title={"Your Favorites"}
             style={{ fontSize: 14, alignSelf: "center", marginTop: 10 }}
           />
           {favorites.length > 0 ? (
@@ -259,76 +307,3 @@ const styles = StyleSheet.create({
 });
 
 export default Profile;
-
-// <View style={styles.favoritesContainer}>
-//         <AppText
-//           title={"Noel's Favorites"}
-//           style={{ fontSize: 14, alignSelf: "center", marginTop: 10 }}
-//         />
-
-//         <View style={styles.categoryContainer}>
-//           {favorites.length > 0 ? (
-//             <FlatList
-//               data={favorites}
-//               horizontal={true}
-//               keyExtractor={(item) => item.node.id}
-//               showsHorizontalScrollIndicator={false}
-//               renderItem={({ item }) => {
-//                 return (
-//                   <AniCard
-//                     title={item.node.title}
-//                     image={item.node.main_picture.medium}
-//                     id={item.node.id}
-//                   />
-//                 );
-//               }}
-//             />
-//           ) : (
-//             <AppText
-//               title={"No Favorites Yet"}
-//               style={{
-//                 fontSize: 24,
-//                 alignSelf: "center",
-//                 marginTop: 10,
-//                 justifyContent: "center",
-//               }}
-//             />
-//           )}
-//         </View>
-//         <View style={{ height: 1, backgroundColor: "gray", marginTop: 10 }} />
-//         <AppText
-//           title={"Noel's Recent Watched"}
-//           style={{ fontSize: 14, alignSelf: "center", marginTop: 10 }}
-//         />
-//         <View style={styles.categoryContainer}>
-//           {recentWatched.length > 0 ? (
-//             <FlatList
-//               data={recentWatched}
-//               horizontal={true}
-//               keyExtractor={(item) => item.node.id}
-//               showsHorizontalScrollIndicator={false}
-//               renderItem={({ item }) => {
-//                 return (
-//                   <AniCard
-//                     title={item.node.title}
-//                     image={item.node.main_picture.medium}
-//                     id={item.node.id}
-//                   />
-//                 );
-//               }}
-//             />
-//           ) : (
-//             <AppText
-//               title={"Nothing Yet"}
-//               style={{ fontSize: 24, alignSelf: "center", marginTop: 10 }}
-//             />
-//           )}
-//         </View>
-//       </View>
-
-// watchSummaryContainer: {
-//   marginTop: 30,
-//   flexDirection: "row",
-//   alignItems: "center",
-//   marginHorizontal: 20,
-// },

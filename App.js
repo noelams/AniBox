@@ -8,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState, useContext } from "react";
 import { StatusBar } from "expo-status-bar";
 import Colors from "./Constants/Colors";
+import { UserInfoProvider } from "./Context/UserContext";
 
 const RootNavigator = () => {
   const { userToken, IsLoading } = useContext(AuthContext);
@@ -25,11 +26,13 @@ const RootNavigator = () => {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <WatchlistProvider>
-        <RootNavigator />
-      </WatchlistProvider>
-    </AuthProvider>
+    <UserInfoProvider>
+      <AuthProvider>
+        <WatchlistProvider>
+          <RootNavigator />
+        </WatchlistProvider>
+      </AuthProvider>
+    </UserInfoProvider>
   );
 }
 
