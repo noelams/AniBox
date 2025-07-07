@@ -10,6 +10,7 @@ const { backendUrl } = Constants.expoConfig.extra;
 
 const SignIn = ({ navigation }) => {
   const { signIn } = useContext(AuthContext);
+  const { saveUserInfo } = useContext(UserContext);
 
   const fields = [
     {
@@ -39,12 +40,11 @@ const SignIn = ({ navigation }) => {
     });
 
     const response = await sendData.json();
-    console.log(response);
-    const { saveUserInfo } = useContext(UserContext);
+    const userData = response.user;
     saveUserInfo({
-      username: response.username,
-      email: response.email,
-      profileImage: response.profileImage,
+      username: userData.username,
+      email: userData.email,
+      profileImage: userData.profileImage,
     });
 
     if (!sendData.ok) throw new Error(response.message || "Login failed");

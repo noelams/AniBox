@@ -4,10 +4,12 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import Colors from "../Constants/Colors";
 import Constants from "expo-constants";
 import { AuthContext } from "../Context/AuthContext";
+import UserContext from "../Context/UserContext";
 
 const { backendUrl } = Constants.expoConfig.extra;
 
 const SignUp = ({ navigation }) => {
+  const { saveUserInfo } = useContext(UserContext);
   const { signIn } = useContext(AuthContext);
   const fields = [
     {
@@ -58,6 +60,12 @@ const SignUp = ({ navigation }) => {
     const response = await sendData.json();
     console.log(response);
     signIn(response.token);
+    const userData = response.user;
+    saveUserInfo({
+      username: userData.username,
+      email: userData.email,
+      profileImage: userData.profileImage,
+    });
     if (!sendData.ok) throw new Error(response.message || "Signup failed");
   };
 

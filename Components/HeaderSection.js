@@ -1,12 +1,16 @@
 import { View, StyleSheet, Image } from "react-native";
 import React from "react";
 
-const HeaderSection = () => {
+const HeaderSection = ({ profileImage }) => {
   return (
     <View style={styles.container}>
       <View style={styles.headerContent}>
         <Image
-          source={require("../assets/my_picture.jpg")}
+          source={{
+            uri: profileImage
+              ? profileImage
+              : "https://ui-avatars.com/api/?name=Noel+Inalegwu",
+          }}
           style={styles.coverPhoto}
         />
       </View>

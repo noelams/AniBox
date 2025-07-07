@@ -13,12 +13,14 @@ import AniCard from "../Components/AniCard";
 import HeaderSection from "../Components/HeaderSection";
 import AniCategories from "../Components/AniCategories";
 import { AuthContext } from "../Context/AuthContext";
+import UserContext from "../Context/UserContext";
 
 const Home = ({ navigation }) => {
   const { signOut } = useContext(AuthContext);
+  const { userInfo } = useContext(UserContext);
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderSection />
+      <HeaderSection profileImage={userInfo.profileImage} />
       <ScrollView style={styles.categoriesContainer}>
         <AniCategories categoryTitle={"Top Upcoming Anime"} />
         <AniCategories categoryTitle={"Top Airing Anime"} />

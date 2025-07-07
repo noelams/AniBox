@@ -21,11 +21,12 @@ const Profile = () => {
 
   const { userToken } = useContext(AuthContext);
   const { backendUrl, malApiUrl, clientId } = Constants.expoConfig.extra;
-  const { userInfo } = useContext(UserContext);
+  const { userInfo, updateUserInfo } = useContext(UserContext);
 
   // Unified image picker
-  const handleImageChange = async (onPick) => {
+  const handleImageChange = async (onPick, type) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
     if (status !== "granted") {
       alert("Permission to access media library is required!");
       return;
@@ -39,9 +40,11 @@ const Profile = () => {
     });
 
     if (!result.canceled) {
-      onPick(result.assets[0].uri);
-      onPick(uri); // Update preview immediately
-      uploadImageToBackend(uri, type); // Upload to backend
+      const uri = result.assets[0].uri;
+
+      onPick(uri); // ✅ Set image in state
+      uploadImageToBackend(uri, type); // ✅ Upload to backend with correct type
+      updateUserInfo({ profileImage: uri });
     }
   };
 
@@ -79,7 +82,6 @@ const Profile = () => {
           setCoverImage(data.imageUrl);
         }
 
-        // You can optionally refresh profileData:
         getProfileData();
       } else {
         console.error("Upload failed", data);
@@ -189,6 +191,7 @@ const Profile = () => {
   }, []);
 
   useEffect(() => {
+    console.log("User Info:", userInfo);
     if (favoritesIds.length > 0) {
       fetchFavoritesFromApi();
     }
@@ -237,51 +240,59 @@ const Profile = () => {
             title={"Your Favorites"}
             style={{ fontSize: 14, alignSelf: "center", marginTop: 10 }}
           />
-          {favorites.length > 0 ? (
-            <FlatList
-              data={favorites}
-              horizontal
-              keyExtractor={(item) => item.node.id.toString()}
-              showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <AniCard
-                  title={item.node.title}
-                  image={item.node.main_picture.medium}
-                  id={item.node.id}
-                />
-              )}
-            />
-          ) : (
-            <AppText
-              title={"No Favorites Yet"}
-              style={{ fontSize: 18, alignSelf: "center", marginTop: 10 }}
-            />
-          )}
+          <View style={styles.categoryList}>
+            {favorites.length > 0 ? (
+              <FlatList
+                data={favorites}
+                horizontal
+                keyExtractor={(item) => item.node.id.toString()}
+                showsHorizontalScrollIndicator={false}
+                renderItem={({ item }) => (
+                  <AniCard
+                    title={item.node.title}
+                    image={item.node.main_picture.medium}
+                    id={item.node.id}
+                  />
+                )}
+              />
+            ) : (
+              <AppText
+                title={"No Favorites Yet"}
+                style={{ fontSize: 18, alignSelf: "center", marginTop: 10 }}
+              />
+            )}
+          </View>
         </View>
 
         <View style={{ height: 1, backgroundColor: "gray", marginTop: 10 }} />
 
         <View style={styles.categoryContainer}>
-          {recentWatched.length > 0 ? (
-            <FlatList
-              data={recentWatched}
-              horizontal
-              keyExtractor={(item) => item.node.id.toString()}
-              showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <AniCard
-                  title={item.node.title}
-                  image={item.node.main_picture.medium}
-                  id={item.node.id}
-                />
-              )}
-            />
-          ) : (
-            <AppText
-              title={"Nothing Watched Recently"}
-              style={{ fontSize: 18, alignSelf: "center", marginTop: 10 }}
-            />
-          )}
+          <AppText
+            title={"Recently Watched"}
+            style={{ fontSize: 14, alignSelf: "center", marginTop: 10 }}
+          />
+          <View style={styles.categoryList}>
+            {recentWatched.length > 0 ? (
+              <FlatList
+                data={recentWatched}
+                horizontal
+                keyExtractor={(item) => item.node.id.toString()}
+                showsHorizontalScrollIndicator={false}
+                renderItem={({ item }) => (
+                  <AniCard
+                    title={item.node.title}
+                    image={item.node.main_picture.medium}
+                    id={item.node.id}
+                  />
+                )}
+              />
+            ) : (
+              <AppText
+                title={"Nothing Watched Recently"}
+                style={{ fontSize: 18, alignSelf: "center", marginTop: 10 }}
+              />
+            )}
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -303,6 +314,9 @@ const styles = StyleSheet.create({
 
   categoryContainer: {
     minHeight: 130,
+  },
+  categoryList: {
+    justifyContent: "center",
   },
 });
 

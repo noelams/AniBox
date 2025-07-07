@@ -16,6 +16,13 @@ export const UserInfoProvider = ({ children }) => {
     }
   };
 
+  const updateUserInfo = async ({ newData }) => {
+    setUserInfo((prev) => ({
+      ...prev,
+      ...newData,
+    }));
+  };
+
   const loadUserInfo = async () => {
     try {
       const storedInfo = await AsyncStorage.getItem("userInfo");
@@ -45,7 +52,7 @@ export const UserInfoProvider = ({ children }) => {
 
   return (
     <UserContext.Provider
-      value={{ userInfo, saveUserInfo, clearUserInfo, loading }}
+      value={{ userInfo, saveUserInfo, clearUserInfo, loading, updateUserInfo }}
     >
       {children}
     </UserContext.Provider>

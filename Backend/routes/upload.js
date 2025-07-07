@@ -4,7 +4,8 @@ const multer = require("multer");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const bucket = require("../firebase");
-const User = require("../models/User"); // 👈 Import the user model
+const User = require("../models/User");
+const verifyToken = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
