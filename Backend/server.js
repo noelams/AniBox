@@ -43,6 +43,10 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
+const path = require("path");
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 //test user
 // token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NjM4ZTUyN2ViNTY5ZjQ1NWIyZWEyYiIsImlhdCI6MTc1MTM1NDk2MiwiZXhwIjoxNzUxOTU5NzYyfQ.7lNXY63zzIae6E62M2xKz6JMk1VG5PRi2rmoTT47Kb4
 

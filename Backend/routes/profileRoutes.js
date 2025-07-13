@@ -35,6 +35,7 @@ router.get("/", verifyToken, async (req, res) => {
       watchedThisYearCount: watchedThisYear.length,
       favoritesCount: favorites.length,
       recentFavorites: recentFavorites,
+      _id: userId,
     });
   } catch (err) {
     res

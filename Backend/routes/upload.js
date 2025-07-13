@@ -1,18 +1,32 @@
-// routes/upload.js
-const express = require("express");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
-const bucket = require("../firebase");
 const User = require("../models/User");
 const verifyToken = require("../middleware/authMiddleware");
 
-const router = express.Router();
+const router = require("express").Router();
 
-// Multer config
-const upload = multer({ storage: multer.memoryStorage() });
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
 
-// Upload image and save URL to user profile
+// Multer disk storage config
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = uuidv4() + path.extname(file.originalname);
+    cb(null, uniqueName);
+  },
+});
+
+const upload = multer({ storage });
+
+// Upload endpoint
 router.post(
   "/upload-profile",
   verifyToken,
@@ -20,42 +34,24 @@ router.post(
   async (req, res) => {
     try {
       const userId = req.body.userId;
+
       if (!userId || !req.file) {
         return res.status(400).json({ error: "Missing userId or image" });
       }
 
-      const fileName = `profileImages/${uuidv4()}${path.extname(
-        req.file.originalname
-      )}`;
-      const file = bucket.file(fileName);
+      const filePath = `/uploads/${req.file.filename}`;
 
-      const stream = file.createWriteStream({
-        metadata: {
-          contentType: req.file.mimetype,
-        },
+      await User.findByIdAndUpdate(userId, {
+        profileImage: filePath,
       });
 
-      stream.on("error", (err) => {
-        console.error("Upload Error:", err);
-        res.status(500).json({ error: "Upload failed" });
+      res.status(200).json({
+        message: "Profile image uploaded",
+        imageUrl: filePath,
       });
-
-      stream.on("finish", async () => {
-        await file.makePublic();
-        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
-
-        // 🔗 Save URL to MongoDB user
-        await User.findByIdAndUpdate(userId, { profileImage: publicUrl });
-
-        res
-          .status(200)
-          .json({ message: "Profile image updated", imageUrl: publicUrl });
-      });
-
-      stream.end(req.file.buffer);
     } catch (err) {
-      console.error("Unexpected Error:", err);
-      res.status(500).json({ error: "Unexpected error occurred" });
+      console.error("Upload error:", err);
+      res.status(500).json({ error: "Upload failed" });
     }
   }
 );

@@ -23,7 +23,6 @@ const Profile = () => {
   const { backendUrl, malApiUrl, clientId } = Constants.expoConfig.extra;
   const { userInfo, updateUserInfo } = useContext(UserContext);
 
-  // Unified image picker
   const handleImageChange = async (onPick, type) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -33,7 +32,7 @@ const Profile = () => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -42,33 +41,33 @@ const Profile = () => {
     if (!result.canceled) {
       const uri = result.assets[0].uri;
 
-      onPick(uri); // ✅ Set image in state
-      uploadImageToBackend(uri, type); // ✅ Upload to backend with correct type
-      updateUserInfo({ profileImage: uri });
+      onPick(uri);
+      uploadImageToBackend(uri, type);
+      updateUserInfo((prev) => ({
+        ...prev,
+        profileImage: uri,
+      }));
     }
   };
 
   const uploadImageToBackend = async (imageUri, type = "profile") => {
     try {
+      console.log("Uploading image with URI:", imageUri);
+      console.log("Backend URL:", backendUrl);
+
       const formData = new FormData();
-
-      // Get the filename and extension
-      const fileName = imageUri.split("/").pop();
-      const match = /\.(\w+)$/.exec(fileName);
-      const fileType = match ? `image/${match[1]}` : `image`;
-
       formData.append("image", {
         uri: imageUri,
-        name: fileName,
-        type: fileType,
+        name: "photo.jpg",
+        type: "image/jpeg",
       });
 
-      formData.append("userId", profileData._id); // You need this from getProfileData()
+      formData.append("userId", userInfo?._id);
 
       const response = await fetch(`${backendUrl}/api/upload-profile`, {
         method: "POST",
         headers: {
-          "Content-Type": "multipart/form-data",
+          authorization: `Bearer ${userToken}`,
         },
         body: formData,
       });
@@ -101,6 +100,7 @@ const Profile = () => {
       });
       const data = await response.json();
       setProfileData(data);
+      console.log("profile data:", data);
     } catch (err) {
       console.error("Error fetching profile data:", err);
     }

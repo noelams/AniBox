@@ -42,6 +42,7 @@ const SignIn = ({ navigation }) => {
     const response = await sendData.json();
     const userData = response.user;
     saveUserInfo({
+      _id: userData.id,
       username: userData.username,
       email: userData.email,
       profileImage: userData.profileImage,
