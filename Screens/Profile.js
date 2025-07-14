@@ -43,10 +43,6 @@ const Profile = () => {
 
       onPick(uri);
       uploadImageToBackend(uri, type);
-      updateUserInfo((prev) => ({
-        ...prev,
-        profileImage: uri,
-      }));
     }
   };
 
@@ -73,12 +69,13 @@ const Profile = () => {
       });
 
       const data = await response.json();
+      console.log("Uploaded image URL from backend:", data.imageUrl);
 
       if (data.imageUrl) {
         if (type === "profile") {
-          setProfileImage(data.imageUrl);
+          setProfileImage(`${backendUrl}${data.imageUrl}`);
         } else {
-          setCoverImage(data.imageUrl);
+          setCoverImage(`${backendUrl}${data.imageUrl}`);
         }
 
         getProfileData();
@@ -188,10 +185,9 @@ const Profile = () => {
     getFavorites();
     getRecentWatched();
     console.log(backendUrl);
-  }, []);
+  }, [backendUrl, userToken]);
 
   useEffect(() => {
-    console.log("User Info:", userInfo);
     if (favoritesIds.length > 0) {
       fetchFavoritesFromApi();
     }

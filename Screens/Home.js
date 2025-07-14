@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import Colors from "../Constants/Colors";
 import AniCard from "../Components/AniCard";
 import HeaderSection from "../Components/HeaderSection";
@@ -18,6 +18,11 @@ import UserContext from "../Context/UserContext";
 const Home = ({ navigation }) => {
   const { signOut } = useContext(AuthContext);
   const { userInfo } = useContext(UserContext);
+
+  useEffect(() => {
+    console.log("user Info:", userInfo);
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <HeaderSection profileImage={userInfo.profileImage} />
