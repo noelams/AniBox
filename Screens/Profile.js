@@ -48,17 +48,20 @@ const Profile = () => {
 
   const uploadImageToBackend = async (imageUri, type = "profile") => {
     try {
+      getProfileData();
       console.log("Uploading image with URI:", imageUri);
       console.log("Backend URL:", backendUrl);
+      console.log("User Info:", userInfo);
 
       const formData = new FormData();
       formData.append("image", {
         uri: imageUri,
         name: "photo.jpg",
         type: "image/jpeg",
+        profileOrCover: type,
       });
 
-      formData.append("userId", userInfo?._id);
+      formData.append("userId", userInfo?.id);
 
       const response = await fetch(`${backendUrl}/api/upload-profile`, {
         method: "POST",
@@ -69,16 +72,18 @@ const Profile = () => {
       });
 
       const data = await response.json();
-      console.log("Uploaded image URL from backend:", data.imageUrl);
+      console.log("Image Upload Data:", data);
 
-      if (data.imageUrl) {
+      const imageFromCloudinary = data.imageUrl;
+
+      if (imageFromCloudinary) {
         if (type === "profile") {
-          setProfileImage(`${backendUrl}${data.imageUrl}`);
+          setProfileImage(imageFromCloudinary);
+          updateUserInfo({ newData: { profileImage: imageFromCloudinary } });
         } else {
-          setCoverImage(`${backendUrl}${data.imageUrl}`);
+          setCoverImage(imageFromCloudinary);
+          updateUserInfo({ newData: { coverImage: imageFromCloudinary } });
         }
-
-        getProfileData();
       } else {
         console.error("Upload failed", data);
       }
@@ -97,6 +102,12 @@ const Profile = () => {
       });
       const data = await response.json();
       setProfileData(data);
+      if (data.profileImage) {
+        setProfileImage(data.profileImage);
+      }
+      if (data.coverImage) {
+        setCoverImage(data.coverImage);
+      }
       console.log("profile data:", data);
     } catch (err) {
       console.error("Error fetching profile data:", err);

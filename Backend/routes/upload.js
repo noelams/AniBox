@@ -1,32 +1,30 @@
+const express = require("express");
 const multer = require("multer");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("cloudinary").v2;
 const path = require("path");
-const fs = require("fs");
-const { v4: uuidv4 } = require("uuid");
 const User = require("../models/User");
 const verifyToken = require("../middleware/authMiddleware");
+require("dotenv").config();
 
 const router = require("express").Router();
 
-// Ensure uploads directory exists
-const uploadDir = path.join(__dirname, "../uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
+cloudinary.config({
+  cloud_name: "dxo6mbjkc",
+  api_key: "443218383167334",
+  api_secret: "yZXqLOHjR0fUGyqdjcjh13A7v_4",
+});
 
-// Multer disk storage config
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = uuidv4() + path.extname(file.originalname);
-    cb(null, uniqueName);
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "profileImages",
+    allowed_formats: ["jpg, jpeg, png"],
   },
 });
 
 const upload = multer({ storage });
 
-// Upload endpoint
 router.post(
   "/upload-profile",
   verifyToken,
@@ -34,20 +32,25 @@ router.post(
   async (req, res) => {
     try {
       const userId = req.body.userId;
+      const type = req.body.profileOrCover;
 
       if (!userId || !req.file) {
         return res.status(400).json({ error: "Missing userId or image" });
       }
 
-      const filePath = `/uploads/${req.file.filename}`;
-
-      await User.findByIdAndUpdate(userId, {
-        profileImage: filePath,
-      });
+      if (type === "profile") {
+        await User.findByIdAndUpdate(userId, {
+          profileImage: req.file.path,
+        });
+      } else {
+        await User.findByIdAndUpdate(userId, {
+          coverImage: req.file.path,
+        });
+      }
 
       res.status(200).json({
-        message: "Profile image uploaded",
-        imageUrl: filePath,
+        message: "Profile image uploaded to Cloudinary",
+        imageUrl: req.file.path,
       });
     } catch (err) {
       console.error("Upload error:", err);

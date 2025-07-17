@@ -36,6 +36,8 @@ router.get("/", verifyToken, async (req, res) => {
       favoritesCount: favorites.length,
       recentFavorites: recentFavorites,
       _id: userId,
+      profileImage: req.user.profileImage,
+      coverImage: req.user.coverImage,
     });
   } catch (err) {
     res
