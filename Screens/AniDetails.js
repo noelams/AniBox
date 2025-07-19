@@ -8,18 +8,20 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+
 import Colors from "../Constants/Colors";
 import AppText from "../Components/AppText";
 import AniCategories from "../Components/AniCategories";
 import WatchlistContext from "../Context/WatchlistContext";
 import Constants from "expo-constants";
+import BackButton from "../Components/BackButton";
 const { malApiUrl, clientId } = Constants.expoConfig.extra;
 
 const AniDetails = ({ route, navigation }) => {
   const id = route.params.id;
   const [AnimeData, setAnimeData] = useState([]);
   const { watchlist, toggleWatchlist } = useContext(WatchlistContext);
+  const [statusColor, setStatusColor] = useState(null);
 
   const isInWatchlist = watchlist.some((item) => item.id === id);
 
@@ -75,6 +77,18 @@ const AniDetails = ({ route, navigation }) => {
 
   if (!AnimeData) return <Text>Loading</Text>;
 
+  useEffect(() => {
+    if (status) {
+      if (status === "not_yet_aired") {
+        setStatusColor(Colors.lightGreen);
+      } else if (status === "finished_airing") {
+        setStatusColor(Colors.accent1);
+      } else {
+        setStatusColor(Colors.accent1);
+      }
+    }
+  }, []);
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.imageContainer}>
@@ -83,12 +97,20 @@ const AniDetails = ({ route, navigation }) => {
         ) : (
           <Text>No Image Available</Text>
         )}
+        <BackButton
+          position={"absolute"}
+          navigation={navigation}
+          absolutePositionStyles={{ top: 10, left: 10 }}
+        />
       </View>
 
       <View style={styles.statusContainer}>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <View style={styles.titleBlock}>
-            <AppText title={status?.replace(/_/g, " ")} style={styles.status} />
+            <AppText
+              title={status?.replace(/_/g, " ")}
+              style={[styles.status, { color: statusColor }]}
+            />
             <View style={styles.titleContainer}>
               <AppText title={title} style={styles.title} />
               <AppText
@@ -171,6 +193,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: "100%",
     height: 250,
+    position: "relative",
   },
   img: {
     width: "100%",

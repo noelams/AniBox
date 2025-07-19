@@ -38,3 +38,7 @@ yarn-error.*
 
 #secrets
 ./Backend/firebaseServiceKey.json
+
+*.json
+firebase.json
+
