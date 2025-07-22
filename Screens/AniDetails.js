@@ -1,3 +1,7 @@
+//Implement the rating component(or build one from scratch)
+//Textarea for reviews
+//complete modal set up and post request.
+
 import React, { useContext, useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -7,6 +11,7 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Modal,
 } from "react-native";
 
 import Colors from "../Constants/Colors";
@@ -15,13 +20,21 @@ import AniCategories from "../Components/AniCategories";
 import WatchlistContext from "../Context/WatchlistContext";
 import Constants from "expo-constants";
 import BackButton from "../Components/BackButton";
-const { malApiUrl, clientId } = Constants.expoConfig.extra;
+import LogButton from "../Components/LogButton";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import StatusButton from "../Components/StatusButton";
+const { malApiUrl, clientId, backendUrl } = Constants.expoConfig.extra;
+import { AuthContext } from "../Context/AuthContext";
 
 const AniDetails = ({ route, navigation }) => {
   const id = route.params.id;
   const [AnimeData, setAnimeData] = useState([]);
   const { watchlist, toggleWatchlist } = useContext(WatchlistContext);
   const [statusColor, setStatusColor] = useState(null);
+  const [modalIsVisible, setModalIsVisible] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(null);
+  const [isLoading, setIsloading] = useState(false);
+  const { userToken } = useContext(AuthContext);
 
   const isInWatchlist = watchlist.some((item) => item.id === id);
 
@@ -77,6 +90,36 @@ const AniDetails = ({ route, navigation }) => {
 
   if (!AnimeData) return <Text>Loading</Text>;
 
+  const handleStatusUpdate = async (status) => {
+    if (status === "watched") {
+      setCurrentStatus(status);
+    } else if (status === "watching") {
+      setCurrentStatus(status);
+    } else if (status === "want to watch") {
+      setCurrentStatus(status);
+    }
+
+    try {
+      const data = {
+        status: status,
+        animeId: id,
+        review: review,
+        score: score,
+      };
+      setIsloading(true);
+      const response = fetch(`${backendUrl}/api/anime-log`, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${userToken}`,
+        },
+        body: JSON.stringify(data),
+      });
+    } catch (err) {
+    } finally {
+      setIsloading(false);
+    }
+  };
+
   useEffect(() => {
     if (status) {
       if (status === "not_yet_aired") {
@@ -90,101 +133,157 @@ const AniDetails = ({ route, navigation }) => {
   }, []);
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.imageContainer}>
-        {main_picture ? (
-          <Image source={{ uri: main_picture?.large }} style={styles.img} />
-        ) : (
-          <Text>No Image Available</Text>
-        )}
-        <BackButton
-          position={"absolute"}
-          navigation={navigation}
-          absolutePositionStyles={{ top: 10, left: 10 }}
-        />
-      </View>
-
-      <View style={styles.statusContainer}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <View style={styles.titleBlock}>
-            <AppText
-              title={status?.replace(/_/g, " ")}
-              style={[styles.status, { color: statusColor }]}
+    <View style={styles.container}>
+      <Modal visible={modalIsVisible} animationType="slide">
+        <View style={styles.modal}>
+          <TouchableOpacity style={styles.closeBtn}>
+            <MaterialCommunityIcons
+              name="close"
+              size={25}
+              color={Colors.accent3}
             />
-            <View style={styles.titleContainer}>
-              <AppText title={title} style={styles.title} />
+          </TouchableOpacity>
+
+          <View>
+            <StatusButton
+              iconName="eye"
+              label={"Watched"}
+              onPress={() => handleStatusUpdate("watched")}
+            />
+            <StatusButton
+              iconName="plus"
+              label={"Want to Watch"}
+              onPress={() => handleStatusUpdate("want to watch")}
+            />
+            <StatusButton
+              iconName="ball"
+              label={"Watching"}
+              onPress={() => handleStatusUpdate("watching")}
+            />
+          </View>
+        </View>
+      </Modal>
+      <ScrollView>
+        <View style={styles.imageContainer}>
+          {main_picture ? (
+            <Image source={{ uri: main_picture?.large }} style={styles.img} />
+          ) : (
+            <Text>No Image Available</Text>
+          )}
+          <BackButton
+            position={"absolute"}
+            navigation={navigation}
+            absolutePositionStyles={{ top: 10, left: 10 }}
+          />
+        </View>
+
+        <View style={styles.statusContainer}>
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
+            <View style={styles.titleBlock}>
               <AppText
-                title={start_date?.split("-")[0]}
+                title={status?.replace(/_/g, " ")}
+                style={[styles.status, { color: statusColor }]}
+              />
+              <View style={styles.titleContainer}>
+                <AppText title={title} style={styles.title} />
+                <AppText
+                  title={start_date?.split("-")[0]}
+                  style={styles.startDate}
+                />
+              </View>
+              <AppText
+                title={`Studios: ${studios
+                  ?.map((studio) => studio.name)
+                  .join(", ")}`}
                 style={styles.startDate}
               />
             </View>
-            <AppText
-              title={`Studios: ${studios
-                ?.map((studio) => studio.name)
-                .join(", ")}`}
-              style={styles.startDate}
-            />
-          </View>
 
-          <View style={styles.animeInfo}>
-            <AppText
-              title={`Number of Episodes:${num_episodes}`}
-              style={styles.info}
-            />
-            <AppText
-              style={styles.info}
-              title={`Average Episode Duration:
+            <View style={styles.animeInfo}>
+              <AppText
+                title={`Number of Episodes:${num_episodes}`}
+                style={styles.info}
+              />
+              <AppText
+                style={styles.info}
+                title={`Average Episode Duration:
               ${Math.floor(average_episode_duration / 60)} minutes`}
-            />
+              />
+            </View>
           </View>
         </View>
-      </View>
-      {/* <Text>{start_season}</Text> */}
-      <View style={styles.synopsisContainer}>
-        <AppText title={synopsis} style={styles.synopsis} />
-        {nsfw === "white" ? null : <Text style={styles.nsfw}>NSFW</Text>}
-      </View>
+        {/* <Text>{start_season}</Text> */}
+        <View style={styles.synopsisContainer}>
+          <AppText title={synopsis} style={styles.synopsis} />
+          {nsfw === "white" ? null : <Text style={styles.nsfw}>NSFW</Text>}
+        </View>
 
-      <View style={styles.ratingContainer}>
+        <View style={styles.ratingContainer}>
+          <TouchableOpacity
+            style={styles.watchlistBtn}
+            onPress={() => toggleWatchlist(AnimeData)}
+          >
+            <AppText
+              title={isInWatchlist ? "Added to Watchlist" : "Add to Watchlist"}
+              style={styles.watchlistText}
+            />
+          </TouchableOpacity>
+
+          <View>
+            <AppText title={"Ratings"} style={styles.ratingHeader} />
+            <AppText title={mean / 2} style={styles.rating} />
+          </View>
+        </View>
+
         <TouchableOpacity
-          style={styles.watchlistBtn}
-          onPress={() => toggleWatchlist(AnimeData)}
+          onPress={() => {
+            navigation.navigate("MyWatchlist");
+          }}
+          style={styles.gotoWatchlist}
         >
-          {/* <FontAwesome name="line-chart" size={30} color="black" /> */}
-          <AppText
-            title={isInWatchlist ? "Added to Watchlist" : "Add to Watchlist"}
-            style={styles.watchlistText}
-          />
+          <AppText title={"Go to Watchlist"} style={styles.gotoWatchlistText} />
         </TouchableOpacity>
 
-        <View>
-          <AppText title={"Ratings"} style={styles.ratingHeader} />
-          <AppText title={mean / 2} style={styles.rating} />
-        </View>
-      </View>
-
-      <TouchableOpacity
-        onPress={() => {
-          navigation.navigate("MyWatchlist");
-        }}
-        style={styles.gotoWatchlist}
-      >
-        <AppText title={"Go to Watchlist"} style={styles.gotoWatchlistText} />
-      </TouchableOpacity>
-
-      <View style={{ height: 1, backgroundColor: "gray", marginTop: 30 }} />
-      <AniCategories
-        categoryTitle={"Recommended For You"}
-        animeObject={recommendations}
+        <View style={{ height: 1, backgroundColor: "gray", marginTop: 30 }} />
+        <AniCategories
+          categoryTitle={"Recommended For You"}
+          animeObject={recommendations}
+        />
+        <AniCategories
+          categoryTitle={"Similar Anime"}
+          animeObject={related_anime}
+        />
+      </ScrollView>
+      <LogButton
+        customStyles={styles.logBtn}
+        onPress={() => setModalIsVisible(true)}
       />
-      <AniCategories
-        categoryTitle={"Similar Anime"}
-        animeObject={related_anime}
-      />
-    </ScrollView>
+    </View>
   );
 };
 const styles = StyleSheet.create({
+  //modal styles
+  modal: {
+    backgroundColor: Colors.accent1,
+    borderColor: Colors.accent2,
+    borderWidth: 1,
+    borderTopStartRadius: 10,
+    borderTopEndRadius: 10,
+    flex: 1,
+  },
+  closeBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.accent4,
+    marginHorizontal: 10,
+  },
+
+  //screen Content styles
   container: {
     paddingTop: 35,
     backgroundColor: Colors.backgroundColor,
@@ -269,6 +368,11 @@ const styles = StyleSheet.create({
   },
   rating: {
     color: Colors.secondary,
+  },
+  logBtn: {
+    position: "absolute",
+    bottom: 30,
+    right: 30,
   },
 });
 
