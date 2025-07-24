@@ -1,11 +1,11 @@
-import { StyleSheet, TouchableOpacity } from "react-native";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIconsa";
+import { StyleSheet, TouchableOpacity, Text } from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React from "react";
 
 const StatusButton = ({
   iconName,
   size,
-  iconColor,
+  iconColor = "#ffffff",
   customStyles,
   label,
   customLabelStyles,
@@ -35,7 +35,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   label: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
+    color: "#ffffff",
   },
 });

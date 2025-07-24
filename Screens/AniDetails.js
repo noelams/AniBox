@@ -7,7 +7,7 @@ import {
   StyleSheet,
   View,
   Text,
-  SafeAreaView,
+  TextInput,
   Image,
   TouchableOpacity,
   ScrollView,
@@ -23,8 +23,9 @@ import BackButton from "../Components/BackButton";
 import LogButton from "../Components/LogButton";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import StatusButton from "../Components/StatusButton";
-const { malApiUrl, clientId, backendUrl } = Constants.expoConfig.extra;
 import { AuthContext } from "../Context/AuthContext";
+import StarRating from "../Components/StarRating";
+import CustomButton from "../Components/CustomButton";
 
 const AniDetails = ({ route, navigation }) => {
   const id = route.params.id;
@@ -32,9 +33,15 @@ const AniDetails = ({ route, navigation }) => {
   const { watchlist, toggleWatchlist } = useContext(WatchlistContext);
   const [statusColor, setStatusColor] = useState(null);
   const [modalIsVisible, setModalIsVisible] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState(null);
   const [isLoading, setIsloading] = useState(false);
   const { userToken } = useContext(AuthContext);
+  const { malApiUrl, clientId, backendUrl } = Constants.expoConfig.extra;
+  const [inputHeight, setInputHeight] = useState(0);
+  const [logData, setLogData] = useState({
+    review: "",
+    status: null,
+    score: null,
+  });
 
   const isInWatchlist = watchlist.some((item) => item.id === id);
 
@@ -90,21 +97,13 @@ const AniDetails = ({ route, navigation }) => {
 
   if (!AnimeData) return <Text>Loading</Text>;
 
-  const handleStatusUpdate = async (status) => {
-    if (status === "watched") {
-      setCurrentStatus(status);
-    } else if (status === "watching") {
-      setCurrentStatus(status);
-    } else if (status === "want to watch") {
-      setCurrentStatus(status);
-    }
-
+  const handleUpdateLog = async () => {
     try {
       const data = {
-        status: status,
+        status: logData.status,
         animeId: id,
-        review: review,
-        score: score,
+        review: logData.review,
+        score: logData.score,
       };
       setIsloading(true);
       const response = fetch(`${backendUrl}/api/anime-log`, {
@@ -114,12 +113,21 @@ const AniDetails = ({ route, navigation }) => {
         },
         body: JSON.stringify(data),
       });
+
+      const responseData = await response.json();
+      console.log(responseData);
     } catch (err) {
     } finally {
       setIsloading(false);
     }
   };
 
+  const handleRatingChange = (newRating) => {
+    setLogData((prev) => ({
+      ...prev,
+      score: newRating,
+    }));
+  };
   useEffect(() => {
     if (status) {
       if (status === "not_yet_aired") {
@@ -134,31 +142,84 @@ const AniDetails = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Modal visible={modalIsVisible} animationType="slide">
-        <View style={styles.modal}>
-          <TouchableOpacity style={styles.closeBtn}>
-            <MaterialCommunityIcons
-              name="close"
-              size={25}
-              color={Colors.accent3}
-            />
+      <Modal
+        visible={modalIsVisible}
+        animationType="slide"
+        style={styles.modal}
+      >
+        <View style={styles.modalContainer}>
+          {/* close button */}
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={() => setModalIsVisible(false)}
+          >
+            <MaterialCommunityIcons name="close" size={25} color={"#ffffff"} />
           </TouchableOpacity>
 
-          <View>
-            <StatusButton
-              iconName="eye"
-              label={"Watched"}
-              onPress={() => handleStatusUpdate("watched")}
-            />
-            <StatusButton
-              iconName="plus"
-              label={"Want to Watch"}
-              onPress={() => handleStatusUpdate("want to watch")}
-            />
-            <StatusButton
-              iconName="ball"
-              label={"Watching"}
-              onPress={() => handleStatusUpdate("watching")}
+          <ScrollView style={{ flex: 1 }}>
+            <View style={styles.logStatusContainer}>
+              <StatusButton
+                iconName="eye"
+                label={"Watched"}
+                onPress={() =>
+                  setLogData((prev) => ({
+                    ...prev,
+                    status: "watched",
+                  }))
+                }
+              />
+              <StatusButton
+                iconName="plus"
+                label={"Want to Watch"}
+                onPress={() =>
+                  setLogData((prev) => ({
+                    ...prev,
+                    status: "want to watch",
+                  }))
+                }
+              />
+              <StatusButton
+                iconName="apple"
+                label={"Watching"}
+                onPress={() =>
+                  setLogData((prev) => ({
+                    ...prev,
+                    status: "watching",
+                  }))
+                }
+              />
+            </View>
+            <StarRating onRatingChange={handleRatingChange} />
+
+            <View style={styles.inputContainer}>
+              <TextInput
+                editable
+                multiline
+                value={logData.review}
+                maxLength={200}
+                placeholder="Add a Review"
+                placeholderTextColor={"#ffffff"}
+                onChangeText={(text) => {
+                  setLogData((prev) => ({ ...prev, review: text }));
+                }}
+                onContentSizeChange={(event) => {
+                  setInputHeight(event.nativeEvent.contentSize.height);
+                }}
+                style={[
+                  styles.textInput,
+                  { height: Math.max(80, inputHeight) },
+                ]}
+              />
+            </View>
+          </ScrollView>
+          <View style={styles.modalFooter}>
+            <CustomButton
+              onPress={() => {
+                console.log("Log Data:", logData);
+              }}
+              title={"SAVE CHANGES"}
+              customStyles={styles.saveButton}
+              customTextStyles={{ fontWeight: "bold" }}
             />
           </View>
         </View>
@@ -266,21 +327,47 @@ const AniDetails = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   //modal styles
   modal: {
-    backgroundColor: Colors.accent1,
-    borderColor: Colors.accent2,
     borderWidth: 1,
     borderTopStartRadius: 10,
     borderTopEndRadius: 10,
+  },
+  modalContainer: {
+    backgroundColor: Colors.backgroundColor,
+    borderColor: Colors.accent2,
     flex: 1,
   },
   closeBtn: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Colors.accent4,
-    marginHorizontal: 10,
+    backgroundColor: Colors.accent2,
+    margin: 10,
+  },
+  logStatusContainer: {
+    alignItems: "center",
+    flexDirection: "row",
+    marginVertical: 10,
+  },
+  inputContainer: {
+    backgroundColor: Colors.accent2,
+  },
+  textInput: {
+    textAlignVertical: "top",
+  },
+  modalFooter: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.backgroundColor,
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: Colors.accent3,
+  },
+  saveButton: {
+    width: "100%",
   },
 
   //screen Content styles
