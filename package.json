@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@babel/core": "^7.26.0",
+    "@gorhom/bottom-sheet": "^5.1.8",
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-navigation/bottom-tabs": "^7.2.1",
     "@react-navigation/native": "^7.0.15",
@@ -22,8 +23,11 @@
     "jwt-decode": "^4.0.0",
     "react": "19.0.0",
     "react-native": "0.79.4",
+    "react-native-gesture-handler": "~2.24.0",
+    "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
-    "react-native-screens": "~4.11.1"
+    "react-native-screens": "~4.11.1",
+    "react-native-toast-message": "^2.3.3"
   },
   "devDependencies": {
     "jest-fetch-mock": "^3.0.3"

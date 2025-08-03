@@ -1,8 +1,13 @@
-//Implement the rating component(or build one from scratch)
-//Textarea for reviews
 //complete modal set up and post request.
 
-import React, { useContext, useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+} from "react";
 import {
   StyleSheet,
   View,
@@ -10,8 +15,10 @@ import {
   TextInput,
   Image,
   TouchableOpacity,
-  ScrollView,
   Modal,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 
 import Colors from "../Constants/Colors";
@@ -26,45 +33,33 @@ import StatusButton from "../Components/StatusButton";
 import { AuthContext } from "../Context/AuthContext";
 import StarRating from "../Components/StarRating";
 import CustomButton from "../Components/CustomButton";
+import Toast from "react-native-toast-message";
+import { ScrollView } from "react-native-gesture-handler";
+import {
+  BottomSheetModal,
+  BottomSheetTextInput,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 
 const AniDetails = ({ route, navigation }) => {
-  const id = route.params.id;
+  const animeId = route.params.id;
   const [AnimeData, setAnimeData] = useState([]);
   const { watchlist, toggleWatchlist } = useContext(WatchlistContext);
   const [statusColor, setStatusColor] = useState(null);
-  const [modalIsVisible, setModalIsVisible] = useState(false);
   const [isLoading, setIsloading] = useState(false);
   const { userToken } = useContext(AuthContext);
   const { malApiUrl, clientId, backendUrl } = Constants.expoConfig.extra;
   const [inputHeight, setInputHeight] = useState(0);
+  const [hasLog, setHasLog] = useState(false);
+  const [paramsId, setParamsId] = useState(null);
+
   const [logData, setLogData] = useState({
     review: "",
     status: null,
     score: null,
   });
 
-  const isInWatchlist = watchlist.some((item) => item.id === id);
-
-  useEffect(() => {
-    const apiUrl = `${malApiUrl}/anime/${id}?fields=id,title,main_picture,start_date,end_date,synopsis,mean,rank,popularity,nsfw,created_at,updated_at,media_type,status,genres,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,recommendations,studios,statistics`;
-    fetch(apiUrl, {
-      method: "GET",
-      headers: {
-        "X-MAL-CLIENT-ID": `${clientId}`,
-        "content-type": "application/json",
-      },
-    })
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        // console.log(data);
-        setAnimeData(data);
-      })
-      .catch((err) => {
-        console.log("error", err);
-      });
-  }, []);
+  const isInWatchlist = watchlist.some((item) => item.id === animeId);
 
   const {
     title,
@@ -95,30 +90,129 @@ const AniDetails = ({ route, navigation }) => {
     statistics,
   } = AnimeData;
 
-  if (!AnimeData) return <Text>Loading</Text>;
+  // if (!AnimeData || !AnimeData.title) {
+  //   return <ActivityIndicator size="large" color="#fff" />;
+  // }
 
-  const handleUpdateLog = async () => {
+  const handleCreateLog = async () => {
+    // const method = hasLog ? "PUT" : "POST";
+
+    setIsloading(true);
     try {
       const data = {
         status: logData.status,
-        animeId: id,
+        animeId: animeId,
         review: logData.review,
         score: logData.score,
       };
-      setIsloading(true);
-      const response = fetch(`${backendUrl}/api/anime-log`, {
+      console.log("Data:", data);
+      // console.log("method:", method);
+      const sendData = await fetch(`${backendUrl}/api/anime-log`, {
         method: "POST",
         headers: {
           authorization: `Bearer ${userToken}`,
+          "content-type": "application/json",
         },
         body: JSON.stringify(data),
       });
 
-      const responseData = await response.json();
-      console.log(responseData);
+      const response = await sendData.json();
+      console.log(response);
+      if (response.ok) {
+        showSuccessToast();
+        setParamsId(response.savedLog._id);
+      } else {
+        showErrorToast();
+      }
     } catch (err) {
+      console.error("Error sending Log Data:", err);
     } finally {
       setIsloading(false);
+      bottomSheetModalRef.current?.dismiss();
+    }
+  };
+  const handleUpdateLog = async () => {
+    setIsloading(true);
+    console.log("Params Id:", paramsId);
+    try {
+      const data = {
+        status: logData.status,
+        animeId: animeId,
+        review: logData.review,
+        score: logData.score,
+      };
+      console.log("Data:", data);
+
+      const sendData = await fetch(`${backendUrl}/api/anime-log/${paramsId}`, {
+        method: "PUT",
+        headers: {
+          authorization: `Bearer ${userToken}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const response = await sendData.json();
+      console.log(response);
+      if (response.ok) {
+        showSuccessToast();
+      } else {
+        showErrorToast();
+      }
+    } catch (err) {
+      console.error("Error sending Log Data:", err);
+    } finally {
+      setIsloading(false);
+      bottomSheetModalRef.current?.dismiss();
+    }
+  };
+
+  const handleLoadLog = async () => {
+    try {
+      const fetchLogData = fetch(
+        `${backendUrl}/api/anime-log?animeId=${animeId}`,
+        {
+          method: "GET",
+          headers: {
+            authorization: `Bearer ${userToken}`,
+            "content-type": "application/json",
+          },
+        }
+      );
+      const response = await fetchLogData;
+      const logData = await response.json();
+      console.log("Loaded Log Data:", logData);
+      if (logData && Object.keys(logData).length > 0) {
+        setLogData({
+          score: logData.log.score,
+          review: logData.log.review,
+          status: logData.log.status,
+        });
+        setParamsId(logData.log._id);
+        setHasLog(true);
+      } else {
+        setHasLog(false);
+      }
+    } catch (err) {
+      console.error("Error fetching Log Data:", err);
+    }
+  };
+
+  const handleDeleteLog = async () => {
+    try {
+      const response = await fetch(
+        `${backendUrl}/api/anime-log?animeId=${animeId}`,
+        {
+          method: "DELETE",
+          headers: {
+            authorization: `Bearer ${userToken}`,
+            "content-type": "application/json",
+          },
+        }
+      );
+      console.log(response.json());
+    } catch (err) {
+      console.error("Error deleting Log Data:", err);
     }
   };
 
@@ -129,6 +223,7 @@ const AniDetails = ({ route, navigation }) => {
     }));
   };
   useEffect(() => {
+    console.log("backend Url:", backendUrl);
     if (status) {
       if (status === "not_yet_aired") {
         setStatusColor(Colors.lightGreen);
@@ -140,90 +235,162 @@ const AniDetails = ({ route, navigation }) => {
     }
   }, []);
 
+  useEffect(() => {
+    const fetchAnimeData = async () => {
+      try {
+        const apiUrl = `${malApiUrl}/anime/${animeId}?fields=id,title,main_picture,start_date,end_date,synopsis,mean,rank,popularity,nsfw,created_at,updated_at,media_type,status,genres,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,recommendations,studios,statistics`;
+        const fetchAnimeData = fetch(apiUrl, {
+          method: "GET",
+          headers: {
+            "X-MAL-CLIENT-ID": `${clientId}`,
+            "content-type": "application/json",
+          },
+        });
+
+        const response = await fetchAnimeData;
+        const data = await response.json();
+        setAnimeData(data);
+      } catch (err) {
+        console.error("Error Fetching Anime Data", err);
+      } finally {
+      }
+    };
+    fetchAnimeData();
+    handleLoadLog();
+  }, [animeId]);
+
+  const showSuccessToast = () => {
+    Toast.show({
+      type: "success",
+      text1: "Logged",
+      text2: "Anime successfully logged",
+    });
+  };
+  const showErrorToast = () => {
+    Toast.show({
+      type: "error",
+      text1: "Failed",
+      text2: "Error logging Anime",
+    });
+  };
+
+  const bottomSheetModalRef = useRef(null);
+  const scrollRef = useRef(null);
+
+  const snapPoints = useMemo(() => ["60%"], []);
+
+  const handlePresentModalPress = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
+
   return (
     <View style={styles.container}>
-      <Modal
-        visible={modalIsVisible}
-        animationType="slide"
+      <BottomSheetModal
         style={styles.modal}
+        ref={bottomSheetModalRef}
+        snapPoints={snapPoints}
+        enableDynamicSizing={false}
       >
-        <View style={styles.modalContainer}>
+        <BottomSheetScrollView
+          ref={scrollRef}
+          keyboardShouldPersistTaps={"always"}
+          style={styles.modalContainer}
+        >
           {/* close button */}
           <TouchableOpacity
             style={styles.closeBtn}
-            onPress={() => setModalIsVisible(false)}
+            onPress={() => bottomSheetModalRef.current?.dismiss()}
           >
             <MaterialCommunityIcons name="close" size={25} color={"#ffffff"} />
           </TouchableOpacity>
 
-          <ScrollView style={{ flex: 1 }}>
-            <View style={styles.logStatusContainer}>
-              <StatusButton
-                iconName="eye"
-                label={"Watched"}
-                onPress={() =>
-                  setLogData((prev) => ({
-                    ...prev,
-                    status: "watched",
-                  }))
-                }
-              />
-              <StatusButton
-                iconName="plus"
-                label={"Want to Watch"}
-                onPress={() =>
-                  setLogData((prev) => ({
-                    ...prev,
-                    status: "want to watch",
-                  }))
-                }
-              />
-              <StatusButton
-                iconName="apple"
-                label={"Watching"}
-                onPress={() =>
-                  setLogData((prev) => ({
-                    ...prev,
-                    status: "watching",
-                  }))
-                }
-              />
-            </View>
+          <View style={styles.logStatusContainer}>
+            <StatusButton
+              iconName={logData.status === "watched" ? "eye" : "eye-outline"}
+              label={"Watched"}
+              onPress={() =>
+                setLogData((prev) => ({
+                  ...prev,
+                  status: "watched",
+                }))
+              }
+            />
+            <StatusButton
+              iconName={
+                logData.status === "want to watch" ? "pin" : "pin-outline"
+              }
+              label={"Want to Watch"}
+              onPress={() =>
+                setLogData((prev) => ({
+                  ...prev,
+                  status: "want to watch",
+                }))
+              }
+            />
+            <StatusButton
+              iconName={
+                logData.status === "watching"
+                  ? "play-circle"
+                  : "play-circle-outline"
+              }
+              label={"Watching"}
+              onPress={() =>
+                setLogData((prev) => ({
+                  ...prev,
+                  status: "watching",
+                }))
+              }
+            />
+          </View>
+          <View style={styles.modalRatingContainer}>
             <StarRating onRatingChange={handleRatingChange} />
+            <Text style={styles.modalRatingText}>Rate</Text>
+          </View>
 
-            <View style={styles.inputContainer}>
-              <TextInput
-                editable
-                multiline
-                value={logData.review}
-                maxLength={200}
-                placeholder="Add a Review"
-                placeholderTextColor={"#ffffff"}
-                onChangeText={(text) => {
-                  setLogData((prev) => ({ ...prev, review: text }));
-                }}
-                onContentSizeChange={(event) => {
-                  setInputHeight(event.nativeEvent.contentSize.height);
-                }}
-                style={[
-                  styles.textInput,
-                  { height: Math.max(80, inputHeight) },
-                ]}
-              />
-            </View>
-          </ScrollView>
+          <View style={styles.inputContainer}>
+            <BottomSheetTextInput
+              editable
+              multiline
+              value={logData.review}
+              maxLength={200}
+              placeholder="Add a Review"
+              placeholderTextColor={Colors.placeholder}
+              onChangeText={(text) => {
+                setLogData((prev) => ({ ...prev, review: text }));
+              }}
+              onContentSizeChange={(event) => {
+                setInputHeight(event.nativeEvent.contentSize.height);
+              }}
+              style={[styles.textInput, { height: Math.max(80, inputHeight) }]}
+            />
+          </View>
+          <CustomButton
+            title="Delete Log"
+            onPress={handleDeleteLog}
+            disabled={!hasLog}
+            customStyles={{
+              backgroundColor: Colors.accent1,
+              marginBottom: 20,
+            }}
+          />
+
           <View style={styles.modalFooter}>
             <CustomButton
-              onPress={() => {
-                console.log("Log Data:", logData);
-              }}
-              title={"SAVE CHANGES"}
+              disabled={isLoading}
+              onPress={hasLog ? handleUpdateLog : handleCreateLog}
+              title={
+                isLoading ? (
+                  <ActivityIndicator size={"small"} color={"purple"} />
+                ) : (
+                  "SAVE CHANGES"
+                )
+              }
               customStyles={styles.saveButton}
               customTextStyles={{ fontWeight: "bold" }}
             />
           </View>
-        </View>
-      </Modal>
+        </BottomSheetScrollView>
+      </BottomSheetModal>
       <ScrollView>
         <View style={styles.imageContainer}>
           {main_picture ? (
@@ -319,8 +486,9 @@ const AniDetails = ({ route, navigation }) => {
       </ScrollView>
       <LogButton
         customStyles={styles.logBtn}
-        onPress={() => setModalIsVisible(true)}
+        onPress={handlePresentModalPress}
       />
+      <Toast />
     </View>
   );
 };
@@ -334,7 +502,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     backgroundColor: Colors.backgroundColor,
     borderColor: Colors.accent2,
-    flex: 1,
+    paddingBottom: 80,
   },
   closeBtn: {
     width: 30,
@@ -347,21 +515,37 @@ const styles = StyleSheet.create({
   },
   logStatusContainer: {
     alignItems: "center",
+    justifyContent: "space-around",
     flexDirection: "row",
     marginVertical: 10,
+    // borderTopWidth: 1,
+    marginTop: 20,
+  },
+  modalRatingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 10,
+    padding: 20,
+    borderBottomColor: Colors.placeholder,
+    borderTopColor: Colors.placeholder,
+    borderWidth: 1,
+  },
+  modalRatingText: {
+    color: "#ffffff",
+    fontSize: 16,
   },
   inputContainer: {
-    backgroundColor: Colors.accent2,
+    marginHorizontal: 10,
+    marginVertical: 20,
+    borderWidth: 2,
+    borderColor: Colors.placeholder,
   },
   textInput: {
     textAlignVertical: "top",
+    color: "#ffffff",
   },
   modalFooter: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: Colors.backgroundColor,
+    // backgroundColor: Colors.backgroundColor,
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: Colors.accent3,

@@ -9,6 +9,9 @@ import { useEffect, useState, useContext } from "react";
 import { StatusBar } from "expo-status-bar";
 import Colors from "./Constants/Colors";
 import { UserInfoProvider } from "./Context/UserContext";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import "react-native-reanimated";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 const RootNavigator = () => {
   const { userToken, IsLoading } = useContext(AuthContext);
@@ -26,13 +29,17 @@ const RootNavigator = () => {
 
 export default function App() {
   return (
-    <UserInfoProvider>
-      <AuthProvider>
-        <WatchlistProvider>
-          <RootNavigator />
-        </WatchlistProvider>
-      </AuthProvider>
-    </UserInfoProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BottomSheetModalProvider>
+        <UserInfoProvider>
+          <AuthProvider>
+            <WatchlistProvider>
+              <RootNavigator />
+            </WatchlistProvider>
+          </AuthProvider>
+        </UserInfoProvider>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
   );
 }
 

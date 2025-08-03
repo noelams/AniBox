@@ -5,9 +5,13 @@ const verifyToken = require("../middleware/authMiddleware");
 
 router.post("/", verifyToken, async (req, res) => {
   const { animeId, status, review, score } = req.body;
+  console.log("request body:", req.body);
 
-  if (!animeId || !status) {
-    return res.status(400).json({ message: "animeId and status are required" });
+  if (!status) {
+    return res.status(400).json({ message: "status  required", ok: false });
+  }
+  if (!animeId) {
+    return res.status(400).json({ message: "animeId required", ok: false });
   }
   try {
     const log = new AnimeLog({
@@ -18,9 +22,12 @@ router.post("/", verifyToken, async (req, res) => {
       score,
     });
     const savedLog = await log.save();
-    res.status(201).json(savedLog);
+    res.status(201).json({ savedLog, message: "Log Saved", ok: true });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Server error", error: error.message, ok: false });
   }
 });
 
@@ -29,10 +36,27 @@ router.get("/", verifyToken, async (req, res) => {
   const { status, animeId, year, limit, sort } = req.query;
 
   try {
+    // If animeId is provided, fetch one specific log
+    if (animeId) {
+      const query = { userId, animeId };
+
+      if (status) query.status = status;
+
+      const log = await AnimeLog.findOne(query);
+      if (!log) {
+        return res.status(404).json({ message: "Log not found", ok: false });
+      }
+
+      return res
+        .status(200)
+        .json({ log, message: "Log fetched successfully", ok: true });
+    }
+
+    // Else, fetch multiple logs
     const query = { userId };
 
     if (status) query.status = status;
-    if (animeId) query.animeId = animeId;
+
     if (year) {
       const start = new Date(`${year}-01-01`);
       const end = new Date(`${parseInt(year) + 1}-01-01`);
@@ -51,11 +75,15 @@ router.get("/", verifyToken, async (req, res) => {
 
     const logs = await logsQuery;
 
-    res.status(200).json(logs);
-  } catch (err) {
     res
-      .status(500)
-      .json({ message: "Error fetching logs", error: err.message });
+      .status(200)
+      .json({ logs, message: "Logs fetched successfully", ok: true });
+  } catch (err) {
+    res.status(500).json({
+      message: "Error fetching logs",
+      error: err.message,
+      ok: false,
+    });
   }
 });
 
@@ -69,12 +97,13 @@ router.put("/:id", verifyToken, async (req, res) => {
     if (!updated)
       return res
         .status(404)
-        .json({ message: "Log not found or not authorized" });
-    res.json(updated);
+        .json({ message: "Log not found or not authorized", ok: false });
+    res.json({ message: "Log Updated", updated, ok: true });
   } catch (err) {
     res.status(500).json({
       mesage: "Error updating log",
       error: err.message,
+      ok: false,
     });
   }
 });
@@ -89,11 +118,13 @@ router.delete("/:id", verifyToken, async (req, res) => {
     if (!deleted)
       return res
         .status(404)
-        .json({ message: "Log not found or not authorized" });
+        .json({ message: "Log not found or not authorized", ok: false });
 
-    res.json({ message: "Anime log deleted", deleted });
+    res.json({ message: "Anime log deleted", deleted, ok: true });
   } catch (err) {
-    res.status(500).json({ message: "Error deleting log", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting log", error: err.message, ok: false });
   }
 });
 

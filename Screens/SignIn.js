@@ -33,6 +33,7 @@ const SignIn = ({ navigation }) => {
   ];
 
   const handleLogin = async (formData) => {
+    console.log("Backend Url:", backendUrl);
     const sendData = await fetch(`${backendUrl}/api/auth/login`, {
       method: "POST",
       headers: { "content-type": "application/json" },

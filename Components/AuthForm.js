@@ -60,6 +60,7 @@ const AuthForm = ({
       await onSubmit(formData);
     } catch (err) {
       Alert.alert("Error", err.message || "Something went wrong");
+      console.error("Error:", err);
     } finally {
       setLoading(false);
     }

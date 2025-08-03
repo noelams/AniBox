@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   label: {
-    fontSize: 20,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#ffffff",
   },
