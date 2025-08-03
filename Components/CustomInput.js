@@ -10,6 +10,7 @@ const CustomInput = ({
   customInputContainerStyle,
   customInputStyle,
   keyboardType,
+  returnKeyLabel,
   icon,
 }) => {
   return (
@@ -23,6 +24,7 @@ const CustomInput = ({
         value={value}
         keyboardType={keyboardType}
         secureTextEntry={isPassword}
+        returnKeyLabel={returnKeyLabel}
       />
     </View>
   );
