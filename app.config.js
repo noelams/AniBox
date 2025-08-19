@@ -5,5 +5,8 @@ export default {
       clientId: process.env.EXPO_PERSONAL_CLIENT_ID,
       backendUrl: process.env.DEV_ENDPOINT,
     },
+    android: {
+      package: "com.noelams.anibox",
+    },
   },
 };

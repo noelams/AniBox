@@ -1,11 +1,12 @@
 import {
   SafeAreaView,
   Text,
+  View,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Colors from "../Constants/Colors";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import CustomTitle from "../Components/CustomTitle";
@@ -16,19 +17,26 @@ import { useNavigation } from "@react-navigation/native";
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const navigation = useNavigation();
   const [isLoading, setIsloading] = useState(false);
+  const [emptySearchResult, setEmptySearchResult] = useState(false);
+  const navigation = useNavigation();
 
-  const fetchResults = async (searchQuery) => {
+  const fetchResults = async (query) => {
     try {
       setIsloading(true);
       const response = await fetch(
-        `https://api.jikan.moe/v4/anime?q=${searchQuery}&limit=5`
+        `https://api.jikan.moe/v4/anime?q=${query}&limit=5`
       );
       const result = await response.json();
+      const finalResult = result.data;
 
-      setSuggestions(result.data);
-      // console.log("result:", result.data);
+      setSuggestions(finalResult);
+
+      if (finalResult.length === 0) {
+        setEmptySearchResult(true);
+      } else {
+        setEmptySearchResult(false);
+      }
     } catch (err) {
       console.error("Error fetching Search Results:", err);
     } finally {
@@ -38,21 +46,24 @@ const Search = () => {
 
   const handlePress = (item) => {
     const id = item.mal_id;
-    console.log("Suggestion:", item);
-    navigation.navigate("Home", { screen: "AniDetails", params: { id: id } });
+    navigation.navigate("Home", { screen: "AniDetails", params: { id } });
     setSearchQuery("");
+    setSuggestions([]);
   };
+
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       if (searchQuery.length > 2) {
         fetchResults(searchQuery);
       } else {
         setSuggestions([]);
+        setEmptySearchResult(false);
       }
     }, 500);
 
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
+
   return (
     <SafeAreaView style={styles.container}>
       <CustomTitle title="Search" />
@@ -70,25 +81,37 @@ const Search = () => {
         customInputContainerStyle={styles.searchInput}
         onChangeText={(text) => setSearchQuery(text)}
       />
-      {suggestions?.length > 0 &&
-        (isLoading ? (
-          <ActivityIndicator size={"small"} color={"purple"} />
-        ) : (
-          <FlatList
-            scrollEnabled={false}
-            style={styles.suggestionList}
-            data={suggestions}
-            keyExtractor={(item) => item.mal_id.toString()}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => handlePress(item)}
-                style={styles.suggestion}
-              >
-                <Text style={styles.suggestionText}>{item.title}</Text>
-              </TouchableOpacity>
-            )}
-          />
-        ))}
+
+      {isLoading && (
+        <View style={{ marginTop: 20 }}>
+          <ActivityIndicator size="small" color="purple" />
+        </View>
+      )}
+
+      {!isLoading && suggestions.length > 0 && (
+        <FlatList
+          scrollEnabled={false}
+          style={styles.suggestionList}
+          data={suggestions}
+          keyExtractor={(item) => item.mal_id.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => handlePress(item)}
+              style={styles.suggestion}
+            >
+              <Text style={styles.suggestionText}>{item.title}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      )}
+
+      {!isLoading && emptySearchResult && (
+        <View style={{ padding: 20 }}>
+          <Text style={{ color: Colors.placeholder }}>
+            No Results for "{searchQuery}"
+          </Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -104,20 +127,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     borderRadius: 10,
   },
-  searchResultContainer: {
-    flex: 1,
-    backgroundColor: "grey",
-  },
-  contentContainer: {
-    flex: 1,
-    padding: 36,
-    alignItems: "center",
-  },
   suggestionList: {
     marginHorizontal: 20,
-    backgroundColor: "white",
     alignSelf: "stretch",
-    borderRadius: 8,
     maxHeight: 250,
     paddingHorizontal: 10,
   },
@@ -126,6 +138,10 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.accent4,
     borderBottomWidth: 1,
     padding: 5,
+  },
+  suggestionText: {
+    color: Colors.placeholder,
+    fontSize: 16,
   },
 });
 

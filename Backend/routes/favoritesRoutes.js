@@ -7,18 +7,19 @@ router.post("/", verifyToken, async (req, res) => {
   const { animeId } = req.body;
   const userId = req.user.id;
   if (!animeId) {
-    return res.status(400).json({ message: "animeId required" });
+    return res.status(400).json({ message: "animeId required", ok: false });
   }
   try {
     const favorite = new Favorite({
       userId,
       animeId,
-      addedAt,
     });
     const savedFavorite = await favorite.save();
-    res.status(200).json(savedFavorite);
+    res.status(200).json({ savedFavorite, ok: true });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Server error", error: err.message, ok: false });
   }
 });
 
@@ -37,9 +38,11 @@ router.get("/", verifyToken, async (req, res) => {
 
     const favorites = await query;
 
-    res.status(200).json(favorites);
+    res.status(200).json({ favorites, ok: true });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Server error", error: err.message, ok: false });
   }
 });
 
@@ -53,11 +56,13 @@ router.delete("/:animeId", verifyToken, async (req, res) => {
     if (!deleted)
       return res
         .status(404)
-        .json({ message: "Log not found or not authorized" });
+        .json({ message: "Log not found or not authorized", ok: false });
 
-    res.json({ message: "Favorite removed", deleted });
+    res.json({ message: "Favorite removed", deleted, ok: true });
   } catch (err) {
-    res.status(500).json({ message: "Error deleting log", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting log", error: err.message, ok: false });
   }
 });
 

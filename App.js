@@ -12,32 +12,35 @@ import { UserInfoProvider } from "./Context/UserContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const RootNavigator = () => {
-  const { userToken, IsLoading } = useContext(AuthContext);
-
-  if (IsLoading) {
-    return <ActivityIndicator size={"large"} />;
-  }
-
-  return (
-    <NavigationContainer style={styles.container}>
-      {userToken ? <MainNavigator /> : <AuthNavigator />}
-    </NavigationContainer>
-  );
-};
+const queryClient = new QueryClient();
 
 export default function App() {
+  const RootNavigator = () => {
+    const { userToken, IsLoading } = useContext(AuthContext);
+    if (IsLoading) {
+      return <ActivityIndicator size={"large"} />;
+    }
+    return (
+      <NavigationContainer style={styles.container}>
+        {userToken ? <MainNavigator /> : <AuthNavigator />}
+      </NavigationContainer>
+    );
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
-        <UserInfoProvider>
+        <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <WatchlistProvider>
-              <RootNavigator />
-            </WatchlistProvider>
+            <UserInfoProvider>
+              <WatchlistProvider>
+                <RootNavigator />
+              </WatchlistProvider>
+            </UserInfoProvider>
           </AuthProvider>
-        </UserInfoProvider>
+        </QueryClientProvider>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );

@@ -19,6 +19,11 @@ const StarRating = ({ onRatingChange, maxStars = 5, rating = 0 }) => {
     if (currentRating >= index + 0.5) return "star-half";
     return "star-outline";
   };
+
+  React.useEffect(() => {
+    setCurrentRating(rating);
+  }, [rating]);
+
   return (
     <View style={styles.container}>
       {Array.from({ length: maxStars }, (_, index) => (

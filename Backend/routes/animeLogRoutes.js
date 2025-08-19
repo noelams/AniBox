@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const AnimeLog = require("../models/AnimeLog");
 const verifyToken = require("../middleware/authMiddleware");
+const Favorite = require("../models/Favorites");
 
 router.post("/", verifyToken, async (req, res) => {
   const { animeId, status, review, score } = req.body;
@@ -47,9 +48,13 @@ router.get("/", verifyToken, async (req, res) => {
         return res.status(404).json({ message: "Log not found", ok: false });
       }
 
-      return res
-        .status(200)
-        .json({ log, message: "Log fetched successfully", ok: true });
+      const favorite = await Favorite.findOne({ userId, animeId });
+
+      return res.status(200).json({
+        log: { ...log.toObject(), isFavorite: !!favorite },
+        message: "Log fetched successfully",
+        ok: true,
+      });
     }
 
     // Else, fetch multiple logs
@@ -75,9 +80,19 @@ router.get("/", verifyToken, async (req, res) => {
 
     const logs = await logsQuery;
 
-    res
-      .status(200)
-      .json({ logs, message: "Logs fetched successfully", ok: true });
+    const favorites = await Favorite.find({ userId });
+    const favoriteIds = new Set(favorites.map((f) => f.animeId));
+
+    const logsWithFavorites = logs.map((log) => ({
+      ...log.toObject(),
+      isFavorite: favoriteIds.has(log.animeId),
+    }));
+
+    res.status(200).json({
+      logs: logsWithFavorites,
+      message: "Logs fetched successfully",
+      ok: true,
+    });
   } catch (err) {
     res.status(500).json({
       message: "Error fetching logs",
@@ -101,7 +116,7 @@ router.put("/:id", verifyToken, async (req, res) => {
     res.json({ message: "Log Updated", updated, ok: true });
   } catch (err) {
     res.status(500).json({
-      mesage: "Error updating log",
+      message: "Error updating log",
       error: err.message,
       ok: false,
     });

@@ -19,7 +19,10 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  NativeModules,
 } from "react-native";
+
+import ConfirmModal from "../Components/ConfirmModal";
 
 import Colors from "../Constants/Colors";
 import AppText from "../Components/AppText";
@@ -35,31 +38,39 @@ import StarRating from "../Components/StarRating";
 import CustomButton from "../Components/CustomButton";
 import Toast from "react-native-toast-message";
 import { ScrollView } from "react-native-gesture-handler";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   BottomSheetModal,
   BottomSheetTextInput,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
+import ErrorScreen from "./ErrorScreen";
 
 const AniDetails = ({ route, navigation }) => {
   const animeId = route.params.id;
   const [AnimeData, setAnimeData] = useState([]);
-  const { watchlist, toggleWatchlist } = useContext(WatchlistContext);
   const [statusColor, setStatusColor] = useState(null);
-  const [isLoading, setIsloading] = useState(false);
+  const [LogisLoading, setLogIsloading] = useState(false);
+  const [isFavoritesLoading, setIsFavoritesLoading] = useState(false);
   const { userToken } = useContext(AuthContext);
   const { malApiUrl, clientId, backendUrl } = Constants.expoConfig.extra;
   const [inputHeight, setInputHeight] = useState(0);
   const [hasLog, setHasLog] = useState(false);
+  const [modalIsVisible, setModalIsVisible] = useState(false);
+
   const [paramsId, setParamsId] = useState(null);
 
   const [logData, setLogData] = useState({
     review: "",
     status: null,
     score: null,
+    hasFavorite: false,
   });
 
-  const isInWatchlist = watchlist.some((item) => item.id === animeId);
+  // const postQuery = useQuery({
+  //   queryKey: ["anime-log"], ,
+  //   queryFn: () => handleLoadLog(),
+  // });
 
   const {
     title,
@@ -90,14 +101,8 @@ const AniDetails = ({ route, navigation }) => {
     statistics,
   } = AnimeData;
 
-  // if (!AnimeData || !AnimeData.title) {
-  //   return <ActivityIndicator size="large" color="#fff" />;
-  // }
-
   const handleCreateLog = async () => {
-    // const method = hasLog ? "PUT" : "POST";
-
-    setIsloading(true);
+    setLogIsloading(true);
     try {
       const data = {
         status: logData.status,
@@ -106,7 +111,6 @@ const AniDetails = ({ route, navigation }) => {
         score: logData.score,
       };
       console.log("Data:", data);
-      // console.log("method:", method);
       const sendData = await fetch(`${backendUrl}/api/anime-log`, {
         method: "POST",
         headers: {
@@ -127,12 +131,12 @@ const AniDetails = ({ route, navigation }) => {
     } catch (err) {
       console.error("Error sending Log Data:", err);
     } finally {
-      setIsloading(false);
+      setLogIsloading(false);
       bottomSheetModalRef.current?.dismiss();
     }
   };
   const handleUpdateLog = async () => {
-    setIsloading(true);
+    setLogIsloading(true);
     console.log("Params Id:", paramsId);
     try {
       const data = {
@@ -162,7 +166,7 @@ const AniDetails = ({ route, navigation }) => {
     } catch (err) {
       console.error("Error sending Log Data:", err);
     } finally {
-      setIsloading(false);
+      setLogIsloading(false);
       bottomSheetModalRef.current?.dismiss();
     }
   };
@@ -187,6 +191,7 @@ const AniDetails = ({ route, navigation }) => {
           score: logData.log.score,
           review: logData.log.review,
           status: logData.log.status,
+          hasFavorite: logData.log.isFavorite,
         });
         setParamsId(logData.log._id);
         setHasLog(true);
@@ -216,6 +221,57 @@ const AniDetails = ({ route, navigation }) => {
     }
   };
 
+  const handleAddToFavorites = async () => {
+    try {
+      setIsFavoritesLoading(true);
+      const res = await fetch(`${backendUrl}/api/favorites`, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${userToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ animeId: animeId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setLogData((prev) => {
+          return { ...prev, hasFavorite: true };
+        });
+        console.log("Added to favorites:", data);
+      } else {
+        console.error("Failed to add to favorites:", data);
+      }
+    } catch (err) {
+      console.error("Error fetching favorites IDs:", err);
+    } finally {
+      setIsFavoritesLoading(false);
+    }
+  };
+  const handleRemoveFromFavorites = async () => {
+    try {
+      setIsFavoritesLoading(true);
+      const response = await fetch(`${backendUrl}/api/favorites/${animeId}`, {
+        method: "DELETE",
+        headers: {
+          authorization: `Bearer ${userToken}`,
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        console.log("Deleted:", data);
+        setLogData((prev) => {
+          return { ...prev, hasFavorite: false };
+        });
+      } else {
+        console.log("Failed to delete from favorites:", data);
+      }
+    } catch (err) {
+      console.error("Error Removing Favorite:", err);
+    } finally {
+      setIsFavoritesLoading(false);
+    }
+  };
+
   const handleRatingChange = (newRating) => {
     setLogData((prev) => ({
       ...prev,
@@ -223,17 +279,18 @@ const AniDetails = ({ route, navigation }) => {
     }));
   };
   useEffect(() => {
-    console.log("backend Url:", backendUrl);
+    // console.log("backend Url:", backendUrl);
+    console.log("Is anime ID not a number?:", isNaN(animeId));
     if (status) {
       if (status === "not_yet_aired") {
         setStatusColor(Colors.lightGreen);
       } else if (status === "finished_airing") {
         setStatusColor(Colors.accent1);
       } else {
-        setStatusColor(Colors.accent1);
+        setStatusColor(Colors.accent2);
       }
     }
-  }, []);
+  }, [status]);
 
   useEffect(() => {
     const fetchAnimeData = async () => {
@@ -277,11 +334,22 @@ const AniDetails = ({ route, navigation }) => {
   const bottomSheetModalRef = useRef(null);
   const scrollRef = useRef(null);
 
-  const snapPoints = useMemo(() => ["60%"], []);
+  const snapPoints = useMemo(() => ["75%"], []);
 
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
   }, []);
+
+  const reloadScreen = () => {
+    console.log("Retry button pressed");
+  };
+
+  // if (postQuery.isLoading) {
+  //   return <ActivityIndicator size="large" color="#fff" />;
+  // }
+  // if (postQuery.isError) {
+  //   return <ErrorScreen onPress={reloadScreen} screenName={"Anidetails"} />;
+  // }
 
   return (
     <View style={styles.container}>
@@ -343,7 +411,10 @@ const AniDetails = ({ route, navigation }) => {
             />
           </View>
           <View style={styles.modalRatingContainer}>
-            <StarRating onRatingChange={handleRatingChange} />
+            <StarRating
+              onRatingChange={handleRatingChange}
+              rating={logData.score}
+            />
             <Text style={styles.modalRatingText}>Rate</Text>
           </View>
 
@@ -366,7 +437,7 @@ const AniDetails = ({ route, navigation }) => {
           </View>
           <CustomButton
             title="Delete Log"
-            onPress={handleDeleteLog}
+            onPress={() => setModalIsVisible(true)}
             disabled={!hasLog}
             customStyles={{
               backgroundColor: Colors.accent1,
@@ -376,10 +447,10 @@ const AniDetails = ({ route, navigation }) => {
 
           <View style={styles.modalFooter}>
             <CustomButton
-              disabled={isLoading}
+              disabled={LogisLoading}
               onPress={hasLog ? handleUpdateLog : handleCreateLog}
               title={
-                isLoading ? (
+                LogisLoading ? (
                   <ActivityIndicator size={"small"} color={"purple"} />
                 ) : (
                   "SAVE CHANGES"
@@ -389,6 +460,12 @@ const AniDetails = ({ route, navigation }) => {
               customTextStyles={{ fontWeight: "bold" }}
             />
           </View>
+          <ConfirmModal
+            visible={modalIsVisible}
+            onClose={() => setModalIsVisible(false)}
+            onConfirm={() => handleDeleteLog()}
+            message="Are you sure you want to Delete this Log?"
+          />
         </BottomSheetScrollView>
       </BottomSheetModal>
       <ScrollView>
@@ -451,10 +528,23 @@ const AniDetails = ({ route, navigation }) => {
         <View style={styles.ratingContainer}>
           <TouchableOpacity
             style={styles.watchlistBtn}
-            onPress={() => toggleWatchlist(AnimeData)}
+            onPress={
+              logData.hasFavorite
+                ? handleRemoveFromFavorites
+                : handleAddToFavorites
+            }
+            disabled={isFavoritesLoading}
           >
             <AppText
-              title={isInWatchlist ? "Added to Watchlist" : "Add to Watchlist"}
+              title={
+                isFavoritesLoading ? (
+                  <ActivityIndicator size={"small"} color={"purple"} />
+                ) : logData.hasFavorite ? (
+                  "Added to Favorites"
+                ) : (
+                  "Add to Favorites"
+                )
+              }
               style={styles.watchlistText}
             />
           </TouchableOpacity>

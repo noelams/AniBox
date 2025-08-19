@@ -40,12 +40,12 @@ app.use("/api/profile", profileRoutes);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on http://192.168.35.41:${PORT}`);
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
 
-const path = require("path");
+// const path = require("path");
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 //test user
 // token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NjM4ZTUyN2ViNTY5ZjQ1NWIyZWEyYiIsImlhdCI6MTc1MTM1NDk2MiwiZXhwIjoxNzUxOTU5NzYyfQ.7lNXY63zzIae6E62M2xKz6JMk1VG5PRi2rmoTT47Kb4

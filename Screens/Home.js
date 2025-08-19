@@ -1,21 +1,23 @@
 import {
   View,
-  Text,
+  Modal,
   StyleSheet,
   Button,
   SafeAreaView,
   ScrollView,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Colors from "../Constants/Colors";
 import AniCard from "../Components/AniCard";
 import HeaderSection from "../Components/HeaderSection";
 import AniCategories from "../Components/AniCategories";
 import { AuthContext } from "../Context/AuthContext";
 import UserContext from "../Context/UserContext";
+import ConfirmModal from "../Components/ConfirmModal";
 
 const Home = ({ navigation }) => {
+  const [modalVisible, setModalVisible] = useState(false);
   const { signOut } = useContext(AuthContext);
   const { userInfo } = useContext(UserContext);
 
@@ -34,8 +36,14 @@ const Home = ({ navigation }) => {
         <Button
           title="Log Out"
           onPress={() => {
-            signOut();
+            setModalVisible(true);
           }}
+        />
+        <ConfirmModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onConfirm={() => signOut()}
+          message="Are you sure you want to log out?"
         />
       </ScrollView>
       <StatusBar style="auto" />
