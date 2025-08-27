@@ -6,7 +6,7 @@ import { useNavigation } from "@react-navigation/native";
 const AniCard = ({ title, image, id }) => {
   const navigation = useNavigation();
   const handleNavigate = () => {
-    navigation.navigate("AniDetails", { id });
+    navigation.navigate("Home", { screen: "AniDetails", params: { id } });
   };
   return (
     <TouchableOpacity style={styles.container} onPress={handleNavigate}>

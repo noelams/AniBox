@@ -43,6 +43,7 @@ const Home = ({ navigation }) => {
           visible={modalVisible}
           onClose={() => setModalVisible(false)}
           onConfirm={() => signOut()}
+          buttonLabel="Log Out"
           message="Are you sure you want to log out?"
         />
       </ScrollView>

@@ -1,7 +1,13 @@
 import { StyleSheet, Text, View, Modal, Pressable } from "react-native";
 import React from "react";
 
-const ConfirmModal = ({ visible, onClose, onConfirm, message }) => {
+const ConfirmModal = ({
+  visible,
+  onClose,
+  onConfirm,
+  message,
+  buttonLabel = "Delete",
+}) => {
   return (
     <Modal
       animationType="fade"
@@ -17,7 +23,7 @@ const ConfirmModal = ({ visible, onClose, onConfirm, message }) => {
               <Text style={styles.cancelText}>Cancel</Text>
             </Pressable>
             <Pressable style={styles.deleteButton} onPress={onConfirm}>
-              <Text style={styles.deleteText}>Delete</Text>
+              <Text style={styles.deleteText}>{buttonLabel}</Text>
             </Pressable>
           </View>
         </View>

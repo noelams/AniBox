@@ -9,6 +9,7 @@ import { AuthContext } from "../Context/AuthContext";
 import AppText from "../Components/AppText";
 import AniCard from "../Components/AniCard";
 import UserContext from "../Context/UserContext";
+import { ScrollView } from "react-native-gesture-handler";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState({});
@@ -102,6 +103,9 @@ const Profile = () => {
       });
       const data = await response.json();
       setProfileData(data);
+
+      const favoritesId = data.favorites.map((item) => item.animeId);
+      setFavoritesIds(favoritesId);
       if (data.profileImage) {
         setProfileImage(data.profileImage);
       }
@@ -114,41 +118,27 @@ const Profile = () => {
     }
   };
 
-  const getFavorites = async () => {
-    try {
-      const response = await fetch(`${backendUrl}/api/favorites?limit=4`, {
-        headers: {
-          authorization: `Bearer ${userToken}`,
-        },
-      });
-      const data = await response.json();
-      setFavoritesIds(data.animeid || []);
-    } catch (err) {
-      console.error("Error fetching favorites IDs:", err);
-    }
-  };
-
   const fetchFavoritesFromApi = async () => {
-    const favoritesData = [];
-    for (let id of favoritesIds) {
-      try {
-        const response = await fetch(
-          `${malApiUrl}/${id}?fields=title,main_picture`,
-          {
-            method: "GET",
-            headers: {
-              "X-MAL-CLIENT-ID": clientId,
-              "content-type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
-        favoritesData.push(data);
-      } catch (err) {
-        console.error(`Error fetching anime with ID ${id}:`, err);
-      }
+    try {
+      const results = await Promise.all(
+        favoritesIds.map(async (id) => {
+          const response = await fetch(
+            `${malApiUrl}/anime/${id}?fields=title,main_picture`,
+            {
+              headers: {
+                "X-MAL-CLIENT-ID": clientId,
+                "content-type": "application/json",
+              },
+            }
+          );
+          return response.json();
+        })
+      );
+      console.log("results:", results);
+      setFavorites(results);
+    } catch (err) {
+      console.error("Error fetching favorites:", err);
     }
-    setFavorites(favoritesData);
   };
 
   const getRecentWatched = async () => {
@@ -169,139 +159,145 @@ const Profile = () => {
   };
 
   const fetchRecentWatchedFromApi = async () => {
-    const recentData = [];
-    for (let id of recentWatchedIds) {
-      try {
-        const response = await fetch(
-          `${malApiUrl}/${id}?fields=title,main_picture`,
-          {
-            method: "GET",
-            headers: {
-              "X-MAL-CLIENT-ID": clientId,
-              "content-type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
-        recentData.push(data);
-      } catch (err) {
-        console.error(`Error fetching anime with ID ${id}:`, err);
-      }
+    try {
+      const results = await Promise.all(
+        recentWatchedIds.map(async (id) => {
+          const response = await fetch(
+            `${malApiUrl}/anime/${id}?fields=title,main_picture`,
+            {
+              headers: {
+                "X-MAL-CLIENT-ID": clientId,
+                "content-type": "application/json",
+              },
+            }
+          );
+          return response.json();
+        })
+      );
+      setRecentWatched(results);
+    } catch (err) {
+      console.error("Error fetching Recently Watched:", err);
     }
-    setRecentWatched(recentData);
   };
 
   useEffect(() => {
     getProfileData();
-    getFavorites();
     getRecentWatched();
     console.log(backendUrl);
   }, [backendUrl, userToken]);
 
   useEffect(() => {
-    if (favoritesIds.length > 0) {
+    if (favoritesIds?.length > 0) {
       fetchFavoritesFromApi();
     }
+    console.log("Favorites:", favorites);
   }, [favoritesIds]);
 
   useEffect(() => {
     if (recentWatchedIds.length > 0) {
       fetchRecentWatchedFromApi();
     }
+    console.log("Recently watched:", recentWatched);
   }, [recentWatchedIds]);
 
   return (
     <SafeAreaView style={styles.container}>
-      <CoverPhoto
-        onChangeCover={() => handleImageChange(setCoverImage, "cover")}
-        coverImage={coverImage}
-        onChangeProfile={() => handleImageChange(setProfileImage, "profile")}
-        profileImage={profileImage}
-        displayName={userInfo?.username}
-      />
-
-      <View style={styles.watchSummaryContainer}>
-        <SummaryBox
-          title={"Total Watch"}
-          value={profileData?.totalWatched}
-          color={Colors.secondary}
+      <ScrollView>
+        <CoverPhoto
+          onChangeCover={() => handleImageChange(setCoverImage, "cover")}
+          coverImage={coverImage}
+          onChangeProfile={() => handleImageChange(setProfileImage, "profile")}
+          profileImage={profileImage}
+          displayName={userInfo?.username}
         />
-        <SummaryBox
-          title={"Anime This Year"}
-          value={profileData?.watchedThisYear}
-          color={Colors.primary}
-        />
-        <SummaryBox title={"Likes"} value={"8"} color={Colors.secondary} />
-        <SummaryBox
-          title={"Watchlist"}
-          value={profileData?.watchlist}
-          color={Colors.primary}
-        />
-      </View>
 
-      <View style={{ height: 1, backgroundColor: "gray", marginTop: 10 }} />
-
-      <View style={styles.favoritesContainer}>
-        <View style={styles.categoryContainer}>
-          <AppText
-            title={"Your Favorites"}
-            style={{ fontSize: 14, alignSelf: "center", marginTop: 10 }}
+        <View style={styles.watchSummaryContainer}>
+          <SummaryBox
+            title={"Total Watch"}
+            value={profileData?.totalWatchedCount}
+            color={Colors.secondary}
           />
-          <View style={styles.categoryList}>
-            {favorites.length > 0 ? (
-              <FlatList
-                data={favorites}
-                horizontal
-                keyExtractor={(item) => item.node.id.toString()}
-                showsHorizontalScrollIndicator={false}
-                renderItem={({ item }) => (
-                  <AniCard
-                    title={item.node.title}
-                    image={item.node.main_picture.medium}
-                    id={item.node.id}
-                  />
-                )}
-              />
-            ) : (
-              <AppText
-                title={"No Favorites Yet"}
-                style={{ fontSize: 18, alignSelf: "center", marginTop: 10 }}
-              />
-            )}
-          </View>
+          <SummaryBox
+            title={"Anime This Year"}
+            value={profileData?.watchedThisYearCount}
+            color={Colors.primary}
+          />
+          <SummaryBox
+            title={"Favorites"}
+            value={profileData?.favoritesCount}
+            color={Colors.secondary}
+          />
+          <SummaryBox
+            title={"Watchlist"}
+            value={profileData?.watchlistCount}
+            color={Colors.primary}
+          />
         </View>
 
         <View style={{ height: 1, backgroundColor: "gray", marginTop: 10 }} />
 
-        <View style={styles.categoryContainer}>
-          <AppText
-            title={"Recently Watched"}
-            style={{ fontSize: 14, alignSelf: "center", marginTop: 10 }}
-          />
-          <View style={styles.categoryList}>
-            {recentWatched.length > 0 ? (
-              <FlatList
-                data={recentWatched}
-                horizontal
-                keyExtractor={(item) => item.node.id.toString()}
-                showsHorizontalScrollIndicator={false}
-                renderItem={({ item }) => (
-                  <AniCard
-                    title={item.node.title}
-                    image={item.node.main_picture.medium}
-                    id={item.node.id}
-                  />
-                )}
-              />
-            ) : (
-              <AppText
-                title={"Nothing Watched Recently"}
-                style={{ fontSize: 18, alignSelf: "center", marginTop: 10 }}
-              />
-            )}
+        <View style={styles.favoritesContainer}>
+          <View style={styles.categoryContainer}>
+            <AppText
+              title={"Your Favorites"}
+              style={{ fontSize: 14, alignSelf: "center", marginTop: 10 }}
+            />
+            <View style={styles.categoryList}>
+              {favorites.length > 0 ? (
+                <FlatList
+                  data={favorites}
+                  horizontal
+                  keyExtractor={(item) => item.id.toString()}
+                  showsHorizontalScrollIndicator={false}
+                  renderItem={({ item }) => (
+                    <AniCard
+                      title={item?.title}
+                      image={item?.main_picture.medium}
+                      id={item?.id}
+                    />
+                  )}
+                />
+              ) : (
+                <AppText
+                  title={"No Favorites Yet"}
+                  style={{ fontSize: 18, alignSelf: "center", marginTop: 10 }}
+                />
+              )}
+            </View>
+          </View>
+
+          <View style={{ height: 1, backgroundColor: "gray", marginTop: 10 }} />
+
+          <View style={styles.categoryContainer}>
+            <AppText
+              title={"Recently Watched"}
+              style={{ fontSize: 14, alignSelf: "center", marginTop: 10 }}
+            />
+            <View style={styles.categoryList}>
+              {recentWatched.length > 0 ? (
+                <FlatList
+                  data={recentWatched}
+                  horizontal
+                  keyExtractor={(item) => item.id.toString()}
+                  showsHorizontalScrollIndicator={false}
+                  renderItem={({ item }) => (
+                    <AniCard
+                      title={item?.title}
+                      image={item?.main_picture.medium}
+                      id={item?.id}
+                    />
+                  )}
+                />
+              ) : (
+                <AppText
+                  title={"Nothing Watched Recently"}
+                  style={{ fontSize: 18, alignSelf: "center", marginTop: 10 }}
+                />
+              )}
+            </View>
           </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
