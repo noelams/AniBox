@@ -12,14 +12,9 @@ import {
   StyleSheet,
   View,
   Text,
-  TextInput,
   Image,
   TouchableOpacity,
-  Modal,
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  NativeModules,
 } from "react-native";
 
 import ConfirmModal from "../Components/ConfirmModal";
@@ -27,7 +22,6 @@ import ConfirmModal from "../Components/ConfirmModal";
 import Colors from "../Constants/Colors";
 import AppText from "../Components/AppText";
 import AniCategories from "../Components/AniCategories";
-import WatchlistContext from "../Context/WatchlistContext";
 import Constants from "expo-constants";
 import BackButton from "../Components/BackButton";
 import LogButton from "../Components/LogButton";
@@ -45,6 +39,7 @@ import {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import ErrorScreen from "./ErrorScreen";
+import { Rating } from "react-native-ratings";
 
 const AniDetails = ({ route, navigation }) => {
   const animeId = route.params.id;
@@ -93,7 +88,7 @@ const AniDetails = ({ route, navigation }) => {
   const { mutate: updateLog, isLoading: isUpdating } = useMutation({
     mutationFn: handleUpdateLog,
     onSuccess: (updatedLog) => {
-      queryClient.setQueryData(["anime-log", animeId], updateLog);
+      queryClient.setQueryData(["anime-log", animeId], updatedLog);
       bottomSheetModalRef.current?.dismiss();
       showSuccessToast();
     },
@@ -101,7 +96,7 @@ const AniDetails = ({ route, navigation }) => {
   });
 
   const { mutate: deleteLog, isLoading: isDeleting } = useMutation({
-    mutationFn: () => handleDeleteLog(animeId),
+    mutationFn: () => handleDeleteLog(),
     onSuccess: () => {
       queryClient.removeQueries(["anime-log", animeId]);
       setHasLog(false);
@@ -211,7 +206,10 @@ const AniDetails = ({ route, navigation }) => {
     }
   };
   const handleUpdateLog = async () => {
-    console.log("Params Id:", paramsId);
+    if (!paramsId) {
+      throw new Error("Log ID is missing, cannot update.");
+    }
+
     try {
       const data = {
         status: logData.status,
@@ -238,12 +236,10 @@ const AniDetails = ({ route, navigation }) => {
       }
     } catch (err) {
       console.error("Error sending Log Data:", err);
-    } finally {
-      bottomSheetModalRef.current?.dismiss();
     }
   };
 
-  const handleDeleteLog = async (animeId) => {
+  const handleDeleteLog = async () => {
     try {
       const response = await fetch(
         `${backendUrl}/api/anime-log?animeId=${animeId}`,
@@ -255,7 +251,8 @@ const AniDetails = ({ route, navigation }) => {
           },
         }
       );
-      console.log(response.json());
+      const data = response.json();
+      console.log(data);
     } catch (err) {
       console.error("Error deleting Log Data:", err);
     }
@@ -319,8 +316,6 @@ const AniDetails = ({ route, navigation }) => {
     }));
   };
   useEffect(() => {
-    // console.log("backend Url:", backendUrl);
-    // console.log("Is anime ID not a number?:", isNaN(animeId));
     if (status) {
       if (status === "not_yet_aired") {
         setStatusColor(Colors.lightGreen);
@@ -448,9 +443,15 @@ const AniDetails = ({ route, navigation }) => {
             />
           </View>
           <View style={styles.modalRatingContainer}>
-            <StarRating
-              onRatingChange={handleRatingChange}
-              rating={logData.score}
+            <Rating
+              type="star"
+              ratingCount={5}
+              onFinishRating={(rating) =>
+                setLogData((prev) => ({
+                  ...prev,
+                  score: rating,
+                }))
+              }
             />
             <Text style={styles.modalRatingText}>Rate</Text>
           </View>
@@ -594,18 +595,9 @@ const AniDetails = ({ route, navigation }) => {
 
           <View>
             <AppText title={"Ratings"} style={styles.ratingHeader} />
-            <AppText title={mean / 2} style={styles.rating} />
+            <AppText title={mean ? mean / 2 : "N/A"} style={styles.rating} />
           </View>
         </View>
-
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate("MyWatchlist");
-          }}
-          style={styles.gotoWatchlist}
-        >
-          <AppText title={"Go to Watchlist"} style={styles.gotoWatchlistText} />
-        </TouchableOpacity>
 
         <View style={{ height: 1, backgroundColor: "gray", marginTop: 30 }} />
         <AniCategories
@@ -651,7 +643,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     flexDirection: "row",
     marginVertical: 10,
-    // borderTopWidth: 1,
     marginTop: 20,
   },
   modalRatingContainer: {
