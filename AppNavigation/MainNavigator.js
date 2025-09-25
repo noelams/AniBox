@@ -1,9 +1,9 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Profile from "../Screens/Profile";
 import Search from "../Screens/Search";
 import Colors from "../Constants/Colors";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import HomeStack from "./HomeStack";
+import ProfileStack from "./ProfileStack";
 
 const Tab = createBottomTabNavigator();
 const MainNavigator = () => {
@@ -36,7 +36,7 @@ const MainNavigator = () => {
       />
       <Tab.Screen
         name="Profile"
-        component={Profile}
+        component={ProfileStack}
         options={{
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="person" size={20} color={color} />

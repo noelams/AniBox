@@ -33,7 +33,7 @@ const Home = ({ navigation }) => {
         <AniCategories categoryTitle={"Top Airing Anime"} />
         <AniCategories categoryTitle={"Top Ranking Anime"} />
         <AniCategories categoryTitle={"Top Anime Movies"} />
-        <Button
+        {/* <Button
           title="Log Out"
           onPress={() => {
             setModalVisible(true);
@@ -45,7 +45,7 @@ const Home = ({ navigation }) => {
           onConfirm={() => signOut()}
           buttonLabel="Log Out"
           message="Are you sure you want to log out?"
-        />
+        /> */}
       </ScrollView>
       <StatusBar style="auto" />
     </SafeAreaView>

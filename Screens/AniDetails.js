@@ -1,5 +1,3 @@
-//complete modal set up and post request.
-
 import React, {
   useCallback,
   useContext,
@@ -25,10 +23,11 @@ import AniCategories from "../Components/AniCategories";
 import Constants from "expo-constants";
 import BackButton from "../Components/BackButton";
 import LogButton from "../Components/LogButton";
+import Entypo from "@expo/vector-icons/Entypo";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import StatusButton from "../Components/StatusButton";
 import { AuthContext } from "../Context/AuthContext";
-import StarRating from "../Components/StarRating";
 import CustomButton from "../Components/CustomButton";
 import Toast from "react-native-toast-message";
 import { ScrollView } from "react-native-gesture-handler";
@@ -570,28 +569,39 @@ const AniDetails = ({ route, navigation }) => {
         </View>
 
         <View style={styles.ratingContainer}>
-          <TouchableOpacity
-            style={styles.watchlistBtn}
-            onPress={
-              logData.hasFavorite
-                ? handleRemoveFromFavorites
-                : handleAddToFavorites
-            }
-            disabled={isFavoritesLoading}
-          >
-            <AppText
-              title={
-                isFavoritesLoading ? (
-                  <ActivityIndicator size={"small"} color={"purple"} />
-                ) : logData.hasFavorite ? (
-                  "Added to Favorites"
-                ) : (
-                  "Add to Favorites"
-                )
+          <View>
+            <TouchableOpacity
+              style={styles.favoritesBtn}
+              onPress={
+                logData.hasFavorite
+                  ? handleRemoveFromFavorites
+                  : handleAddToFavorites
               }
-              style={styles.watchlistText}
-            />
-          </TouchableOpacity>
+              disabled={isFavoritesLoading}
+            >
+              <AppText
+                title={
+                  isFavoritesLoading ? (
+                    <ActivityIndicator size={"small"} color={"purple"} />
+                  ) : logData.hasFavorite ? (
+                    <Entypo name="add-to-list" size={24} color={"#fff"} />
+                  ) : (
+                    <MaterialIcons
+                      name="format-align-left"
+                      size={24}
+                      color="#fff"
+                    />
+                  )
+                }
+                style={styles.watchlistText}
+              />
+            </TouchableOpacity>
+            {logData.hasFavorite ? (
+              <Text style={styles.favoriteLabel}>Add to Favorites </Text>
+            ) : (
+              <Text style={styles.favoriteLabel}>Added to Favorites</Text>
+            )}
+          </View>
 
           <View>
             <AppText title={"Ratings"} style={styles.ratingHeader} />
@@ -743,11 +753,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginHorizontal: 10,
   },
-  watchlistBtn: {
+  favoritesBtn: {
     marginVertical: 10,
     backgroundColor: Colors.secondary,
     padding: 10,
-    width: "30%",
+    width: "50%",
     borderRadius: 7,
     alignItems: "center",
   },
