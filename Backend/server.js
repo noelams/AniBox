@@ -38,7 +38,7 @@ app.use("/api/anime-log", animeLogRoutes);
 app.use("/api/favorites", favoritesRoutes);
 app.use("/api/profile", profileRoutes);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);

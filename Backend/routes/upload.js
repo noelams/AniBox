@@ -1,6 +1,7 @@
-const express = require("express");
 const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
+// const { CloudinaryStorage } = require("multer-storage-cloudinary");
+let _msc = require("multer-storage-cloudinary");
+const CloudinaryStorage = _msc.CloudinaryStorage || _msc.default || _msc; // support multiple exports
 const cloudinary = require("cloudinary").v2;
 const path = require("path");
 const User = require("../models/User");
