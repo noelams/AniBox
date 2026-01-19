@@ -5,10 +5,12 @@ import Colors from "../Constants/Colors";
 import Constants from "expo-constants";
 import { AuthContext } from "../Context/AuthContext";
 import UserContext from "../Context/UserContext";
+import { SignUpScreenProps } from "../Types/navigation.types";
 
-const { backendUrl } = Constants.expoConfig.extra;
+const configs = Constants?.expoConfig?.extra;
+const backendUrl = configs?.backendUrl;
 
-const SignUp = ({ navigation }) => {
+const SignUp = ({ navigation }: SignUpScreenProps) => {
   const { saveUserInfo } = useContext(UserContext);
   const { signIn } = useContext(AuthContext);
   const fields = [
@@ -48,7 +50,7 @@ const SignUp = ({ navigation }) => {
     },
   ];
 
-  const handleSignUp = async (formData) => {
+  const handleSignUp = async (formData: Record<string, string>) => {
     // console.log("backend url:", backendUrl);
     const { confirmPassword, ...dataToSend } = formData;
     console.log(dataToSend);
@@ -75,7 +77,6 @@ const SignUp = ({ navigation }) => {
       subTitle="Create an account to continue"
       fields={fields}
       onSubmit={handleSignUp}
-      navigation={navigation}
       alternateText="Already have an account?"
       alternateActionLabel="Login Page"
       alternateActionTarget="Sign In"

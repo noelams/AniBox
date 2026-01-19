@@ -1,12 +1,14 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import React from "react";
 import Colors from "../Constants/Colors";
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { AniCardProps } from "../Types/animedata.types";
+import { HomeStackParamList } from "../Types/navigation.types";
 
-const AniCard = ({ title, image, id }) => {
-  const navigation = useNavigation();
+const AniCard = ({ title, image, id }: AniCardProps) => {
+  const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
   const handleNavigate = () => {
-    navigation.navigate("Home", { screen: "AniDetails", params: { id } });
+    navigation.navigate("AniDetails", { id });
   };
   return (
     <TouchableOpacity style={styles.container} onPress={handleNavigate}>

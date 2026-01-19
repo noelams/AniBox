@@ -8,18 +8,22 @@ import {
 import React, { useEffect, useState } from "react";
 import AniCard from "./AniCard";
 import Constants from "expo-constants";
+import { AniCategoriesProps } from "../Types/screen.types";
+import { AnimeResponse } from "../Types/animedata.types";
 
-const { malApiUrl, clientId } = Constants.expoConfig.extra;
+const configs = Constants.expoConfig?.extra;
+const malApiUrl = configs?.malApiUrl;
+const clientId = configs?.malClientId;
 
-const AniCategories = ({ categoryTitle, animeObject }) => {
-  const [Anime, setAnime] = useState([]);
+const AniCategories = ({ categoryTitle, animeObject }: AniCategoriesProps) => {
+  const [Anime, setAnime] = useState<AnimeResponse | null>();
   const [Loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     // Reset state when category changes.
     setLoading(true);
-    setAnime([]);
+    setAnime(null);
     setError(null);
 
     if (categoryTitle === "Recommended For You") {
@@ -69,9 +73,9 @@ const AniCategories = ({ categoryTitle, animeObject }) => {
         <Text>{error}</Text>
       ) : (
         <FlatList
-          data={Anime}
+          data={Anime?.data}
           horizontal={true}
-          keyExtractor={(item) => item.node.id}
+          keyExtractor={(item) => item.node.id.toString()}
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => {
             return (

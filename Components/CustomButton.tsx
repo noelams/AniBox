@@ -1,6 +1,7 @@
 import { StyleSheet, Text, Pressable } from "react-native";
 import React from "react";
 import Colors from "../Constants/Colors";
+import { CustomButtonProps } from "../Types/ui.types";
 
 const CustomButton = ({
   onPress,
@@ -8,7 +9,7 @@ const CustomButton = ({
   disabled,
   customStyles,
   customTextStyles,
-}) => {
+}: CustomButtonProps) => {
   return (
     <Pressable
       disabled={disabled}

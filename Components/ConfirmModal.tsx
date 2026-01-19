@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, Modal, Pressable } from "react-native";
 import React from "react";
+import { ConfirmModalProps } from "../Types/ui.types";
 
 const ConfirmModal = ({
   visible,
@@ -7,7 +8,7 @@ const ConfirmModal = ({
   onConfirm,
   message,
   buttonLabel = "Delete",
-}) => {
+}: ConfirmModalProps) => {
   return (
     <Modal
       animationType="fade"

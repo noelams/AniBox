@@ -1,6 +1,7 @@
 import { StyleSheet, TouchableOpacity, Text } from "react-native";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
+import { StatusButtonProps } from "../Types/ui.types";
 
 const StatusButton = ({
   iconName,
@@ -10,7 +11,7 @@ const StatusButton = ({
   label,
   customLabelStyles,
   onPress,
-}) => {
+}: StatusButtonProps) => {
   return (
     <TouchableOpacity
       style={[customStyles, styles.statusButton]}

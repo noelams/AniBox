@@ -2,8 +2,9 @@ import { StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
 import React from "react";
 import Colors from "../Constants/Colors";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { ProfilePicProps } from "../Types/ui.types";
 
-const ProfilePic = ({ image, onEdit, displayName }) => {
+const ProfilePic = ({ image, onEdit, displayName }: ProfilePicProps) => {
   return (
     <View style={styles.wrapper}>
       <View style={styles.profilePicContainer}>

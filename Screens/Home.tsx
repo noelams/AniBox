@@ -15,15 +15,12 @@ import AniCategories from "../Components/AniCategories";
 import { AuthContext } from "../Context/AuthContext";
 import UserContext from "../Context/UserContext";
 import ConfirmModal from "../Components/ConfirmModal";
+import { HomeScreen } from "../Types/navigation.types";
 
-const Home = ({ navigation }) => {
+const Home = ({ navigation }: HomeScreen) => {
   const [modalVisible, setModalVisible] = useState(false);
   const { signOut } = useContext(AuthContext);
   const { userInfo } = useContext(UserContext);
-
-  useEffect(() => {
-    console.log("user Info:", userInfo);
-  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -59,7 +56,7 @@ const styles = StyleSheet.create({
   },
   categoriesContainer: {
     flex: 1,
-    width: "100% ",
+    width: "100%",
   },
 });
 

@@ -1,6 +1,7 @@
 import { View, TextInput, StyleSheet } from "react-native";
 import React from "react";
 import Colors from "../Constants/Colors";
+import { CustomInputProps } from "../Types/ui.types";
 
 const CustomInput = ({
   placeholder,
@@ -12,7 +13,7 @@ const CustomInput = ({
   keyboardType,
   returnKeyLabel,
   icon,
-}) => {
+}: CustomInputProps) => {
   return (
     <View style={[styles.container, customInputContainerStyle]}>
       {icon}

@@ -1,17 +1,21 @@
+//refactor absolute styling configurations
+
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import Colors from "../Constants/Colors";
+import { BackButtonProps } from "../Types/ui.types";
+import { useNavigation } from "@react-navigation/native";
 
 const BackButton = ({
   color,
   customContainerStyles,
-  navigation,
   position,
   absolutePositionStyles,
   iconSize = 25,
   backgroundColor = "rgba(0,0,0,0.5)",
-}) => {
+}: BackButtonProps) => {
+  const navigation = useNavigation();
   return (
     <TouchableOpacity
       style={[
