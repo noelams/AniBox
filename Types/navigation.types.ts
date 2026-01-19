@@ -41,6 +41,16 @@ export type SignInScreenProps = NativeStackScreenProps<RootStackParamList,"Sign 
 export type SignUpScreenProps = NativeStackScreenProps<RootStackParamList,"Sign Up">;
 
 export type ProfileScreenProps = CompositeScreenProps<
+    NativeStackScreenProps<ProfileStackParamList,"ProfileScreen">,
+    BottomTabScreenProps<BottomTabsParamList,"Profile">
+>
+
+export type ProfileStackProps = CompositeScreenProps<
     BottomTabScreenProps<BottomTabsParamList,"Profile">,
     NativeStackScreenProps<RootStackParamList,"MAIN_TABS">
 >
+
+export type AuthNavigatorParamList ={
+    "Sign In": undefined;
+    "Sign Up": undefined;
+}

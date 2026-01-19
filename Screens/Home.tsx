@@ -17,7 +17,7 @@ import UserContext from "../Context/UserContext";
 import ConfirmModal from "../Components/ConfirmModal";
 import { HomeScreen } from "../Types/navigation.types";
 
-const Home = ({ navigation }: HomeScreen) => {
+const Home = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const { signOut } = useContext(AuthContext);
   const { userInfo } = useContext(UserContext);
