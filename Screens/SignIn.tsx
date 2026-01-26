@@ -5,14 +5,17 @@ import Colors from "../Constants/Colors";
 import { AuthContext } from "../Context/AuthContext";
 import Constants from "expo-constants";
 import UserContext from "../Context/UserContext";
+import { AuthField } from "../Types/ui.types";
+import { SignInScreenProps } from "../Types/navigation.types";
 
-const { backendUrl } = Constants.expoConfig.extra;
+const configs = Constants?.expoConfig?.extra;
+const backendUrl = configs?.backendUrl;
 
-const SignIn = ({ navigation }) => {
+const SignIn = ({ navigation }: SignInScreenProps) => {
   const { signIn } = useContext(AuthContext);
   const { saveUserInfo } = useContext(UserContext);
 
-  const fields = [
+  const fields: AuthField[] = [
     {
       name: "email",
       placeholder: "Email",
@@ -32,7 +35,7 @@ const SignIn = ({ navigation }) => {
     },
   ];
 
-  const handleLogin = async (formData) => {
+  const handleLogin = async (formData: Record<string, string>) => {
     console.log("Backend Url:", backendUrl);
     const sendData = await fetch(`${backendUrl}/api/auth/login`, {
       method: "POST",
@@ -57,7 +60,6 @@ const SignIn = ({ navigation }) => {
       subTitle="Please sign in to continue"
       fields={fields}
       onSubmit={handleLogin}
-      navigation={navigation}
       alternateText="Don't have an account?"
       alternateActionLabel="Sign Up Page"
       alternateActionTarget="Sign Up"

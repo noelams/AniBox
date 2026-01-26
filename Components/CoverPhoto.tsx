@@ -3,6 +3,7 @@ import React from "react";
 import ProfilePic from "./ProfilePic";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Colors from "../Constants/Colors";
+import { CoverPhotoProps } from "../Types/ui.types";
 
 const CoverPhoto = ({
   onChangeCover,
@@ -10,7 +11,7 @@ const CoverPhoto = ({
   onChangeProfile,
   profileImage,
   displayName,
-}) => {
+}: CoverPhotoProps) => {
   return (
     <View style={{ marginBottom: 50 }}>
       <Image

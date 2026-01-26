@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import React from "react";
 import Colors from "../Constants/Colors";
+import { ErrorScreenProps } from "../Types/screen.types";
 
 const ErrorScreen = ({
   onRetry,
@@ -8,7 +9,7 @@ const ErrorScreen = ({
   screenName,
   errorMessage = "Something went wrong while loading this screen.",
   showGoBack = true,
-}) => {
+}: ErrorScreenProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.errorIcon}>
@@ -64,14 +65,14 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: Colors.textColor || "#333",
+    color: Colors.textColor,
     textAlign: "center",
     marginBottom: 8,
     fontWeight: "500",
   },
   subText: {
     fontSize: 14,
-    color: Colors.subtextColor || "#666",
+    color: Colors.subtextColor,
     textAlign: "center",
     marginBottom: 32,
     lineHeight: 20,
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
     maxWidth: 300,
   },
   retryButton: {
-    backgroundColor: Colors.primaryColor || "#007AFF",
+    backgroundColor: Colors.backgroundColor,
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 8,
@@ -96,14 +97,14 @@ const styles = StyleSheet.create({
   goBackButton: {
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: Colors.primaryColor || "#007AFF",
+    borderColor: Colors.primary,
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 8,
     alignItems: "center",
   },
   goBackButtonText: {
-    color: Colors.primaryColor || "#007AFF",
+    color: Colors.primary,
     fontSize: 16,
     fontWeight: "500",
   },

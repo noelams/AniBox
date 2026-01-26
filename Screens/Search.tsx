@@ -12,16 +12,21 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import CustomTitle from "../Components/CustomTitle";
 import CustomInput from "../Components/CustomInput";
 import { FlatList } from "react-native-gesture-handler";
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { HomeStackParamList } from "../Types/navigation.types";
+import { SearchSuggestionResponse } from "../Types/animedata.types";
 
 const Search = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [suggestions, setSuggestions] = useState<SearchSuggestionResponse[]>(
+    []
+  );
   const [isLoading, setIsloading] = useState(false);
   const [emptySearchResult, setEmptySearchResult] = useState(false);
-  const navigation = useNavigation();
 
-  const fetchResults = async (query) => {
+  const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
+
+  const fetchResults = async (query: string) => {
     try {
       setIsloading(true);
       const response = await fetch(
@@ -44,9 +49,9 @@ const Search = () => {
     }
   };
 
-  const handlePress = (item) => {
+  const handlePress = (item: SearchSuggestionResponse) => {
     const id = item.mal_id;
-    navigation.navigate("Home", { screen: "AniDetails", params: { id } });
+    navigation.navigate("AniDetails", { id });
     setSearchQuery("");
     setSuggestions([]);
   };

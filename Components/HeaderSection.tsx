@@ -1,7 +1,8 @@
 import { View, StyleSheet, Image } from "react-native";
 import React from "react";
+import { HeaderSectionProps } from "../Types/ui.types";
 
-const HeaderSection = ({ profileImage }) => {
+const HeaderSection = ({ profileImage }: HeaderSectionProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.headerContent}>

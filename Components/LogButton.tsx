@@ -1,7 +1,8 @@
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import React from "react";
 import Colors from "../Constants/Colors";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { LogButtonProps } from "../Types/ui.types";
 
 const LogButton = ({
   onPress,
@@ -9,7 +10,7 @@ const LogButton = ({
   icon,
   customStyles,
   iconName,
-}) => {
+}: LogButtonProps) => {
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -21,7 +22,7 @@ const LogButton = ({
     >
       <MaterialCommunityIcons
         size={icon ?? 30}
-        name={"plus" || iconName}
+        name={iconName ?? "plus"}
         color="#ffffff"
       />
     </TouchableOpacity>

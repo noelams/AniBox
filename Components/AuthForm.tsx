@@ -1,3 +1,5 @@
+// as Never? what does that mean here?
+
 import {
   View,
   Text,
@@ -18,26 +20,31 @@ import CustomTitle from "./CustomTitle";
 import CustomInput from "./CustomInput";
 import CustomButton from "./CustomButton";
 import Colors from "../Constants/Colors";
+import { useNavigation } from "@react-navigation/native";
+import { AuthFormProps } from "../Types/ui.types";
 
 const AuthForm = ({
   title,
   subTitle,
   fields,
   onSubmit,
-  navigation,
   alternateText,
   alternateActionLabel,
   alternateActionTarget,
   image,
-}) => {
-  const [formData, setFormData] = useState(
-    fields.reduce((acc, f) => ({ ...acc, [f.name]: "" }), {})
+}: AuthFormProps) => {
+  const [formData, setFormData] = useState<Record<string, string>>(
+    fields.reduce(
+      (acc, f) => ({ ...acc, [f.name]: "" }),
+      {} as Record<string, string>
+    )
   );
+  const navigation = useNavigation();
 
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    const emptyField = Object.entries(formData).find(
+    const emptyField = (Object.entries(formData) as [string, string][]).find(
       ([key, value]) => !value.trim()
     );
 
@@ -59,7 +66,9 @@ const AuthForm = ({
     try {
       await onSubmit(formData);
     } catch (err) {
-      Alert.alert("Error", err.message || "Something went wrong");
+      const errorMessage =
+        err instanceof Error ? err.message : "Something went wrong";
+      Alert.alert("Error", errorMessage);
       console.error("Error:", err);
     } finally {
       setLoading(false);
@@ -102,7 +111,9 @@ const AuthForm = ({
               <View style={styles.CTAcontainer}>
                 <Text style={styles.CTAtext}>{alternateText} </Text>
                 <TouchableOpacity
-                  onPress={() => navigation.navigate(alternateActionTarget)}
+                  onPress={() =>
+                    navigation.navigate(alternateActionTarget as never)
+                  }
                 >
                   <Text style={styles.goToAction}>{alternateActionLabel}</Text>
                 </TouchableOpacity>

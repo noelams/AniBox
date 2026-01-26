@@ -8,6 +8,10 @@ const Colors = {
   accent3: "#9c4a8b",
   accent4: "#6865cd",
   lightGreen: "#00ff26",
-};
+  textColor: "#333",
+  subtextColor: "#666",
+}as const;
 
 export default Colors;
+
+export type ColorKey = keyof typeof Colors;

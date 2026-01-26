@@ -4,6 +4,8 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  ImageSourcePropType,
+  Alert,
 } from "react-native";
 import React, { useEffect, useState, useContext } from "react";
 import Colors from "../Constants/Colors";
@@ -17,21 +19,35 @@ import AppText from "../Components/AppText";
 import AniCard from "../Components/AniCard";
 import UserContext from "../Context/UserContext";
 import { ScrollView } from "react-native-gesture-handler";
+import {
+  ProfileDataResponse,
+  ProfileErrorType,
+  profileFavoritesResponse,
+  ProfileSummaryResponse,
+} from "../Types/screen.types";
+import { ProfileScreenProps } from "../Types/navigation.types";
 
-const Profile = ({ navigation }) => {
-  const [profileData, setProfileData] = useState({});
+const Profile = ({ navigation }: ProfileScreenProps) => {
+  const [profileData, setProfileData] = useState<ProfileDataResponse | null>(
+    null,
+  );
   const [favoritesIds, setFavoritesIds] = useState([]);
-  const [favorites, setFavorites] = useState([]);
+  const [favorites, setFavorites] = useState<ProfileSummaryResponse[]>([]);
   const [recentWatchedIds, setRecentWatchedIds] = useState([]);
-  const [recentWatched, setRecentWatched] = useState([]);
+  const [recentWatched, setRecentWatched] = useState<ProfileSummaryResponse[]>(
+    [],
+  );
   const [coverImage, setCoverImage] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<ProfileErrorType | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
 
   const { userToken } = useContext(AuthContext);
-  const { backendUrl, malApiUrl, clientId } = Constants.expoConfig.extra;
+  const configs = Constants?.expoConfig?.extra;
+  const malApiUrl = configs?.malApiUrl;
+  const backendUrl = configs?.backendUrl;
+  const clientId = configs?.clientId;
   const { userInfo, updateUserInfo } = useContext(UserContext);
 
   // Reset error state when retrying
@@ -40,7 +56,10 @@ const Profile = ({ navigation }) => {
     setIsLoading(true);
   };
 
-  const handleImageChange = async (onPick, type) => {
+  const handleImageChange = async (
+    onPick: (uri: string) => void,
+    type: string,
+  ) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== "granted") {
@@ -62,20 +81,20 @@ const Profile = ({ navigation }) => {
     }
   };
 
-  const uploadImageToBackend = async (imageUri, type = "profile") => {
+  const uploadImageToBackend = async (imageUri: string, type = "profile") => {
     try {
       setImageUploading(true);
       console.log("Uploading image with URI:", imageUri);
       console.log("Backend URL:", backendUrl);
       console.log("User Info:", userInfo);
 
-      const formData = new FormData();
+      const formData: FormData = new FormData();
       formData.append("image", {
         uri: imageUri,
         name: "photo.jpg",
         type: "image/jpeg",
         profileOrCover: type,
-      });
+      } as any);
 
       formData.append("userId", userInfo?.id);
 
@@ -131,7 +150,9 @@ const Profile = ({ navigation }) => {
       const data = await response.json();
       setProfileData(data);
 
-      const favoritesId = data.favorites?.map((item) => item.animeId) || [];
+      const favoritesId =
+        data.favorites?.map((item: profileFavoritesResponse) => item.animeId) ||
+        [];
       setFavoritesIds(favoritesId);
 
       if (data.profileImage) {
@@ -140,7 +161,6 @@ const Profile = ({ navigation }) => {
       if (data.coverImage) {
         setCoverImage(data.coverImage);
       }
-      console.log("profile data:", data);
       return data;
     } catch (err) {
       console.error("Error fetching profile data:", err);
@@ -148,7 +168,7 @@ const Profile = ({ navigation }) => {
     }
   };
 
-  const fetchFavoritesFromApi = async (ids) => {
+  const fetchFavoritesFromApi = async (ids: number[]) => {
     try {
       if (!ids || ids.length === 0) {
         setFavorites([]);
@@ -164,7 +184,7 @@ const Profile = ({ navigation }) => {
                 "X-MAL-CLIENT-ID": clientId,
                 "content-type": "application/json",
               },
-            }
+            },
           );
 
           if (!response.ok) {
@@ -173,7 +193,7 @@ const Profile = ({ navigation }) => {
           }
 
           return response.json();
-        })
+        }),
       );
 
       const validResults = results.filter((result) => result !== null);
@@ -194,7 +214,7 @@ const Profile = ({ navigation }) => {
           headers: {
             authorization: `Bearer ${userToken}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -211,7 +231,7 @@ const Profile = ({ navigation }) => {
     }
   };
 
-  const fetchRecentWatchedFromApi = async (ids) => {
+  const fetchRecentWatchedFromApi = async (ids: number[]) => {
     try {
       if (!ids || ids.length === 0) {
         setRecentWatched([]);
@@ -227,7 +247,7 @@ const Profile = ({ navigation }) => {
                 "X-MAL-CLIENT-ID": clientId,
                 "content-type": "application/json",
               },
-            }
+            },
           );
 
           if (!response.ok) {
@@ -236,7 +256,7 @@ const Profile = ({ navigation }) => {
           }
 
           return response.json();
-        })
+        }),
       );
 
       const validResults = results.filter((result) => result !== null);
@@ -263,16 +283,23 @@ const Profile = ({ navigation }) => {
       // Load external API data in parallel
       const [favoritesResults, recentWatchedResults] = await Promise.all([
         fetchFavoritesFromApi(
-          profileData.favorites?.map((item) => item.animeId) || []
+          profileData.favorites?.map(
+            (item: profileFavoritesResponse) => item.animeId,
+          ) || [],
         ),
         fetchRecentWatchedFromApi(recentIds),
       ]);
-    } catch (err) {
-      console.error("Error loading profile data:", err);
-      setError({
-        message: "Failed to load profile data",
-        details: err.message,
-      });
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert("Error", error.message);
+        setError({
+          message: "Failed to load profile data",
+          details: error.message,
+        });
+      } else {
+        console.log("Unknown error:", error);
+        Alert.alert("Error", "Something went wrong");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -350,28 +377,28 @@ const Profile = ({ navigation }) => {
           <SummaryBox
             title={"Total Watch"}
             value={profileData?.totalWatchedCount || 0}
-            color={Colors.secondary}
+            color={"secondary"}
           />
           <SummaryBox
             title={"Anime This Year"}
             value={profileData?.watchedThisYearCount || 0}
-            color={Colors.primary}
+            color={"primary"}
           />
           <SummaryBox
             title={"Favorites"}
             value={profileData?.favoritesCount || 0}
-            color={Colors.secondary}
+            color={"secondary"}
           />
           <SummaryBox
             title={"Watchlist"}
             value={profileData?.watchlistCount || 0}
-            color={Colors.primary}
+            color={"primary"}
           />
         </View>
 
         <View style={{ height: 1, backgroundColor: "gray", marginTop: 10 }} />
 
-        <View style={styles.favoritesContainer}>
+        <View>
           <View style={styles.categoryContainer}>
             <AppText
               title={"Your Favorites"}

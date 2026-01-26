@@ -4,8 +4,9 @@ import Colors from "../Constants/Colors";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import HomeStack from "./HomeStack";
 import ProfileStack from "./ProfileStack";
+import { BottomTabsParamList } from "../Types/navigation.types";
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<BottomTabsParamList>();
 const MainNavigator = () => {
   return (
     <Tab.Navigator

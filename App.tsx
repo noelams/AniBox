@@ -10,6 +10,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { DevToolsBubble } from "react-native-react-query-devtools";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +21,7 @@ export default function App() {
       return <ActivityIndicator size={"large"} />;
     }
     return (
-      <NavigationContainer style={styles.container}>
+      <NavigationContainer>
         {userToken ? <MainNavigator /> : <AuthNavigator />}
       </NavigationContainer>
     );

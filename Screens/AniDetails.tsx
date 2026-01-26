@@ -1,3 +1,6 @@
+// @ts-check
+//change studio type from any to correct type later
+
 import React, {
   useCallback,
   useContext,
@@ -17,48 +20,59 @@ import {
 
 import ConfirmModal from "../Components/ConfirmModal";
 
-import Colors from "../Constants/Colors";
+import Colors, { ColorKey } from "../Constants/Colors";
 import AppText from "../Components/AppText";
 import AniCategories from "../Components/AniCategories";
 import Constants from "expo-constants";
 import BackButton from "../Components/BackButton";
 import LogButton from "../Components/LogButton";
-import Entypo from "@expo/vector-icons/Entypo";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import {
+  Entypo,
+  MaterialIcons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import StatusButton from "../Components/StatusButton";
 import { AuthContext } from "../Context/AuthContext";
 import CustomButton from "../Components/CustomButton";
 import Toast from "react-native-toast-message";
 import { ScrollView } from "react-native-gesture-handler";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
+import BottomSheet, {
   BottomSheetModal,
   BottomSheetTextInput,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import ErrorScreen from "./ErrorScreen";
 import { Rating } from "react-native-ratings";
+import { AnimeLogData } from "../Types/animedata.types";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { AniDetailsScreenProps } from "../Types/navigation.types";
 
-const AniDetails = ({ route, navigation }) => {
+const AniDetails = ({ route }: AniDetailsScreenProps) => {
   const animeId = route.params.id;
-  const [statusColor, setStatusColor] = useState(null);
+  const [statusColor, setStatusColor] = useState<ColorKey | null>(null);
   const [isFavoritesLoading, setIsFavoritesLoading] = useState(false);
   const { userToken } = useContext(AuthContext);
-  const { malApiUrl, clientId, backendUrl } = Constants.expoConfig.extra;
+  const configs = Constants?.expoConfig?.extra;
+  const malApiUrl = configs?.malApiUrl;
+  const backendUrl = configs?.backendUrl;
+  const clientId = configs?.clientId;
   const [inputHeight, setInputHeight] = useState(0);
   const [hasLog, setHasLog] = useState(false);
   const [modalIsVisible, setModalIsVisible] = useState(false);
-  const queryClient = useQueryClient();
-
-  const [paramsId, setParamsId] = useState(null);
-
-  const [logData, setLogData] = useState({
+  const [logData, setLogData] = useState<AnimeLogData>({
     review: "",
     status: null,
-    score: null,
+    score: 0,
     hasFavorite: false,
   });
+
+  const queryClient = useQueryClient();
+  const [paramsId, setParamsId] = useState(null);
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const scrollRef = useRef(null);
+
+  const snapPoints = useMemo(() => ["75%"], []);
 
   const { data: logResponse, isLoading } = useQuery({
     queryKey: ["anime-log", animeId],
@@ -72,36 +86,6 @@ const AniDetails = ({ route, navigation }) => {
   } = useQuery({
     queryKey: ["anime-data", animeId],
     queryFn: () => fetchAnimeData(malApiUrl, animeId, clientId),
-  });
-
-  const { mutate: createLog, isLoading: isCreating } = useMutation({
-    mutationFn: handleCreateLog,
-    onSuccess: (newLog) => {
-      queryClient.setQueryData(["anime-log", animeId], newLog);
-      bottomSheetModalRef.current?.dismiss();
-      showSuccessToast();
-    },
-    onError: showErrorToast,
-  });
-
-  const { mutate: updateLog, isLoading: isUpdating } = useMutation({
-    mutationFn: handleUpdateLog,
-    onSuccess: (updatedLog) => {
-      queryClient.setQueryData(["anime-log", animeId], updatedLog);
-      bottomSheetModalRef.current?.dismiss();
-      showSuccessToast();
-    },
-    onError: showErrorToast,
-  });
-
-  const { mutate: deleteLog, isLoading: isDeleting } = useMutation({
-    mutationFn: () => handleDeleteLog(),
-    onSuccess: () => {
-      queryClient.removeQueries(["anime-log", animeId]);
-      setHasLog(false);
-      showSuccessToast();
-    },
-    onError: showErrorToast,
   });
 
   const {
@@ -133,7 +117,11 @@ const AniDetails = ({ route, navigation }) => {
     statistics,
   } = animeData ?? {}; // useQuery initially returns undefined before populating animeData
 
-  const fetchAnimeData = async (malApiUrl, animeId, clientId) => {
+  const fetchAnimeData = async (
+    malApiUrl: string,
+    animeId: number,
+    clientId: string,
+  ) => {
     try {
       const apiUrl = `${malApiUrl}/anime/${animeId}?fields=id,title,main_picture,start_date,end_date,synopsis,mean,rank,popularity,nsfw,created_at,updated_at,media_type,status,genres,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,recommendations,studios,statistics`;
       const fetchAnimeData = await fetch(apiUrl, {
@@ -152,7 +140,7 @@ const AniDetails = ({ route, navigation }) => {
     }
   };
 
-  const handleLoadLog = async (animeId, userToken) => {
+  const handleLoadLog = async (animeId: number, userToken: string) => {
     const fetchLogData = await fetch(
       `${backendUrl}/api/anime-log?animeId=${animeId}`,
       {
@@ -161,11 +149,11 @@ const AniDetails = ({ route, navigation }) => {
           authorization: `Bearer ${userToken}`,
           "content-type": "application/json",
         },
-      }
+      },
     );
 
     if (!fetchLogData.ok) {
-      throw new Error(`Error fetching log: ${logData.status}`);
+      throw new Error(`Error fetching log: ${fetchLogData.status}`);
     }
     const logData = await fetchLogData.json();
 
@@ -197,14 +185,16 @@ const AniDetails = ({ route, navigation }) => {
         setParamsId(response.savedLog._id);
         return response;
       } else {
-        throw new Error(json.message || "Failed to create log");
+        throw new Error(response.message || "Failed to create log");
       }
     } catch (err) {
       console.error("Error sending Log Data:", err);
       return null;
     }
   };
+
   const handleUpdateLog = async () => {
+    console.log("Pressed Update Log");
     if (!paramsId) {
       throw new Error("Log ID is missing, cannot update.");
     }
@@ -231,7 +221,7 @@ const AniDetails = ({ route, navigation }) => {
       if (sendData.ok) {
         return response;
       } else {
-        throw new Error(json.message || "Failed to update log");
+        throw new Error(response.message || "Failed to update log");
       }
     } catch (err) {
       console.error("Error sending Log Data:", err);
@@ -248,7 +238,7 @@ const AniDetails = ({ route, navigation }) => {
             authorization: `Bearer ${userToken}`,
             "content-type": "application/json",
           },
-        }
+        },
       );
       const data = response.json();
       console.log(data);
@@ -283,6 +273,7 @@ const AniDetails = ({ route, navigation }) => {
       setIsFavoritesLoading(false);
     }
   };
+
   const handleRemoveFromFavorites = async () => {
     try {
       setIsFavoritesLoading(true);
@@ -308,20 +299,25 @@ const AniDetails = ({ route, navigation }) => {
     }
   };
 
-  const handleRatingChange = (newRating) => {
+  const handleRatingChange = (newRating: number) => {
     setLogData((prev) => ({
       ...prev,
       score: newRating,
     }));
   };
+
+  const reloadScreen = () => {
+    console.log("Reloading AniDetails Screen");
+  };
+
   useEffect(() => {
     if (status) {
       if (status === "not_yet_aired") {
-        setStatusColor(Colors.lightGreen);
+        setStatusColor("lightGreen");
       } else if (status === "finished_airing") {
-        setStatusColor(Colors.accent1);
+        setStatusColor("accent1");
       } else {
-        setStatusColor(Colors.accent2);
+        setStatusColor("accent2");
       }
     }
   }, [status]);
@@ -348,6 +344,7 @@ const AniDetails = ({ route, navigation }) => {
       text2: "Anime successfully logged",
     });
   };
+
   const showErrorToast = () => {
     Toast.show({
       type: "error",
@@ -356,37 +353,59 @@ const AniDetails = ({ route, navigation }) => {
     });
   };
 
-  const bottomSheetModalRef = useRef(null);
-  const scrollRef = useRef(null);
+  const { mutateAsync: createLog, isPending: isCreating } = useMutation({
+    mutationFn: handleCreateLog,
+    onSuccess: (newLog) => {
+      queryClient.setQueryData([`anime-log-${animeId}`], newLog);
+      bottomSheetRef.current?.close();
+      showSuccessToast();
+    },
+    onError: showErrorToast,
+  });
 
-  const snapPoints = useMemo(() => ["75%"], []);
+  const { mutateAsync: updateLog, isPending: isUpdating } = useMutation({
+    mutationFn: handleUpdateLog,
+    onSuccess: (updatedLog) => {
+      queryClient.setQueryData([`anime-log-${animeId}`], updatedLog);
+      bottomSheetRef.current?.close();
+      showSuccessToast();
+    },
+    onError: showErrorToast,
+  });
+
+  const { mutateAsync: deleteLog } = useMutation({
+    mutationFn: () => handleDeleteLog(),
+    onError: showErrorToast,
+    onSuccess: () => {
+      queryClient.removeQueries({ [`anime-log-${animeId}`]: true });
+      setHasLog(false);
+      showSuccessToast();
+    },
+  });
 
   const handlePresentModalPress = useCallback(() => {
-    bottomSheetModalRef.current?.present();
+    bottomSheetRef.current?.expand();
   }, []);
-
-  const reloadScreen = () => {
-    console.log("Retry button pressed");
-  };
 
   if (isLoading || animeDataIsloading) {
     return (
       <View style={styles.loadingContainer}>
         <Text>
-          <ActivityIndicator size="large" color="#fff" />;
+          <ActivityIndicator size="large" color={Colors.primary} />;
         </Text>
       </View>
     );
   }
+
   if (animeDataIsError) {
-    return <ErrorScreen onPress={reloadScreen} screenName={"Anidetails"} />;
+    return <ErrorScreen onRetry={reloadScreen} screenName={"Anidetails"} />;
   }
 
   return (
     <View style={styles.container}>
       <BottomSheetModal
         style={styles.modal}
-        ref={bottomSheetModalRef}
+        ref={bottomSheetRef}
         snapPoints={snapPoints}
         enableDynamicSizing={false}
       >
@@ -398,7 +417,7 @@ const AniDetails = ({ route, navigation }) => {
           {/* close button */}
           <TouchableOpacity
             style={styles.closeBtn}
-            onPress={() => bottomSheetModalRef.current?.dismiss()}
+            onPress={() => bottomSheetRef.current?.close()}
           >
             <MaterialCommunityIcons name="close" size={25} color={"#ffffff"} />
           </TouchableOpacity>
@@ -443,14 +462,19 @@ const AniDetails = ({ route, navigation }) => {
           </View>
           <View style={styles.modalRatingContainer}>
             <Rating
+              tintColor={Colors.backgroundColor}
+              minValue={0.5}
+              fractions={1}
+              jumpValue={0.5}
               type="star"
               ratingCount={5}
-              onFinishRating={(rating) =>
+              onFinishRating={(rating: number) => {
+                console.log("Selected Rating:", rating);
                 setLogData((prev) => ({
                   ...prev,
                   score: rating,
-                }))
-              }
+                }));
+              }}
             />
             <Text style={styles.modalRatingText}>Rate</Text>
           </View>
@@ -486,11 +510,8 @@ const AniDetails = ({ route, navigation }) => {
             <CustomButton
               disabled={isCreating || isUpdating}
               onPress={() => {
-                if (hasLog) {
-                  updateLog();
-                } else {
-                  createLog();
-                }
+                console.log("Save Changes Pressed");
+                createLog();
               }}
               title={
                 isCreating || isUpdating ? (
@@ -520,7 +541,6 @@ const AniDetails = ({ route, navigation }) => {
           )}
           <BackButton
             position={"absolute"}
-            navigation={navigation}
             absolutePositionStyles={{ top: 10, left: 10 }}
           />
         </View>
@@ -529,7 +549,7 @@ const AniDetails = ({ route, navigation }) => {
           <View
             style={{ flexDirection: "row", justifyContent: "space-between" }}
           >
-            <View style={styles.titleBlock}>
+            <View>
               <AppText
                 title={status?.replace(/_/g, " ")}
                 style={[styles.status, { color: statusColor }]}
@@ -543,19 +563,15 @@ const AniDetails = ({ route, navigation }) => {
               </View>
               <AppText
                 title={`Studios: ${studios
-                  ?.map((studio) => studio.name)
+                  ?.map((studio: any) => studio.name)
                   .join(", ")}`}
                 style={styles.startDate}
               />
             </View>
 
             <View style={styles.animeInfo}>
+              <AppText title={`Number of Episodes:${num_episodes}`} />
               <AppText
-                title={`Number of Episodes:${num_episodes}`}
-                style={styles.info}
-              />
-              <AppText
-                style={styles.info}
                 title={`Average Episode Duration:
               ${Math.floor(average_episode_duration / 60)} minutes`}
               />
@@ -597,9 +613,9 @@ const AniDetails = ({ route, navigation }) => {
               />
             </TouchableOpacity>
             {logData.hasFavorite ? (
-              <Text style={styles.favoriteLabel}>Add to Favorites </Text>
+              <Text>Add to Favorites </Text>
             ) : (
-              <Text style={styles.favoriteLabel}>Added to Favorites</Text>
+              <Text>Added to Favorites</Text>
             )}
           </View>
 

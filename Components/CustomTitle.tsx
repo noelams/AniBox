@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
+import { CustomTitleProps } from "../Types/ui.types";
 
-const CustomTitle = ({ title, subTitle }) => {
+const CustomTitle = ({ title, subTitle }: CustomTitleProps) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
