@@ -29,13 +29,13 @@ import { ProfileScreenProps } from "../Types/navigation.types";
 
 const Profile = ({ navigation }: ProfileScreenProps) => {
   const [profileData, setProfileData] = useState<ProfileDataResponse | null>(
-    null
+    null,
   );
   const [favoritesIds, setFavoritesIds] = useState([]);
   const [favorites, setFavorites] = useState<ProfileSummaryResponse[]>([]);
   const [recentWatchedIds, setRecentWatchedIds] = useState([]);
   const [recentWatched, setRecentWatched] = useState<ProfileSummaryResponse[]>(
-    []
+    [],
   );
   const [coverImage, setCoverImage] = useState("");
   const [profileImage, setProfileImage] = useState("");
@@ -47,7 +47,7 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
   const configs = Constants?.expoConfig?.extra;
   const malApiUrl = configs?.malApiUrl;
   const backendUrl = configs?.backendUrl;
-  const clientId = configs?.malClientId;
+  const clientId = configs?.clientId;
   const { userInfo, updateUserInfo } = useContext(UserContext);
 
   // Reset error state when retrying
@@ -58,7 +58,7 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
 
   const handleImageChange = async (
     onPick: (uri: string) => void,
-    type: string
+    type: string,
   ) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -184,7 +184,7 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
                 "X-MAL-CLIENT-ID": clientId,
                 "content-type": "application/json",
               },
-            }
+            },
           );
 
           if (!response.ok) {
@@ -193,7 +193,7 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
           }
 
           return response.json();
-        })
+        }),
       );
 
       const validResults = results.filter((result) => result !== null);
@@ -214,7 +214,7 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
           headers: {
             authorization: `Bearer ${userToken}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -247,7 +247,7 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
                 "X-MAL-CLIENT-ID": clientId,
                 "content-type": "application/json",
               },
-            }
+            },
           );
 
           if (!response.ok) {
@@ -256,7 +256,7 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
           }
 
           return response.json();
-        })
+        }),
       );
 
       const validResults = results.filter((result) => result !== null);
@@ -284,8 +284,8 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
       const [favoritesResults, recentWatchedResults] = await Promise.all([
         fetchFavoritesFromApi(
           profileData.favorites?.map(
-            (item: profileFavoritesResponse) => item.animeId
-          ) || []
+            (item: profileFavoritesResponse) => item.animeId,
+          ) || [],
         ),
         fetchRecentWatchedFromApi(recentIds),
       ]);

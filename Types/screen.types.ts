@@ -1,4 +1,4 @@
-import { AnimeResponse } from "./animedata.types";
+import { AnimeResponseItem } from "./animedata.types";
 
  export interface ErrorScreenProps {
   onRetry: () => void;
@@ -10,7 +10,7 @@ import { AnimeResponse } from "./animedata.types";
 
 export interface AniCategoriesProps{
   categoryTitle: string;
-  animeObject?: AnimeResponse;
+  animeObject?: AnimeResponseItem;
 }
 
 

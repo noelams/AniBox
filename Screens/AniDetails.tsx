@@ -56,7 +56,7 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
   const configs = Constants?.expoConfig?.extra;
   const malApiUrl = configs?.malApiUrl;
   const backendUrl = configs?.backendUrl;
-  const clientId = configs?.malClientId;
+  const clientId = configs?.clientId;
   const [inputHeight, setInputHeight] = useState(0);
   const [hasLog, setHasLog] = useState(false);
   const [modalIsVisible, setModalIsVisible] = useState(false);
@@ -120,7 +120,7 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
   const fetchAnimeData = async (
     malApiUrl: string,
     animeId: number,
-    clientId: string
+    clientId: string,
   ) => {
     try {
       const apiUrl = `${malApiUrl}/anime/${animeId}?fields=id,title,main_picture,start_date,end_date,synopsis,mean,rank,popularity,nsfw,created_at,updated_at,media_type,status,genres,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,recommendations,studios,statistics`;
@@ -149,7 +149,7 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
           authorization: `Bearer ${userToken}`,
           "content-type": "application/json",
         },
-      }
+      },
     );
 
     if (!fetchLogData.ok) {
@@ -238,7 +238,7 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
             authorization: `Bearer ${userToken}`,
             "content-type": "application/json",
           },
-        }
+        },
       );
       const data = response.json();
       console.log(data);

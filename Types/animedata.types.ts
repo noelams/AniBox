@@ -12,13 +12,6 @@ export interface AniCardProps{
 }
 
 
-export type AnimeResponse = {
-  data: AnimeResponseItem[]
-  paging: {
-    next: string
-  }
-}
-
 export type AnimeResponseItem = {
   node: {
     id: number

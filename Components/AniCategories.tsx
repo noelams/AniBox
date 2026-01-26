@@ -9,14 +9,14 @@ import React, { useEffect, useState } from "react";
 import AniCard from "./AniCard";
 import Constants from "expo-constants";
 import { AniCategoriesProps } from "../Types/screen.types";
-import { AnimeResponse } from "../Types/animedata.types";
+import { AnimeResponseItem } from "../Types/animedata.types";
 
 const configs = Constants.expoConfig?.extra;
 const malApiUrl = configs?.malApiUrl;
-const clientId = configs?.malClientId;
+const clientId = configs?.clientId;
 
 const AniCategories = ({ categoryTitle, animeObject }: AniCategoriesProps) => {
-  const [Anime, setAnime] = useState<AnimeResponse | null>();
+  const [anime, setAnime] = useState<AnimeResponseItem[] | null>();
   const [Loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -25,45 +25,38 @@ const AniCategories = ({ categoryTitle, animeObject }: AniCategoriesProps) => {
     setLoading(true);
     setAnime(null);
     setError(null);
-
-    if (categoryTitle === "Recommended For You") {
-      setAnime(animeObject);
-      setLoading(false);
-    } else if (categoryTitle === "Similar Anime") {
-      setAnime(animeObject);
-      setLoading(false);
-    } else {
-      // For ranking categories, use the existing logic:
-      let apiUrl = "";
-      if (categoryTitle === "Top Ranking Anime") {
-        apiUrl = `${malApiUrl}/anime/ranking?ranking_type=all&limit=6`;
-      } else if (categoryTitle === "Top Upcoming Anime") {
-        apiUrl = `${malApiUrl}/anime/ranking?ranking_type=upcoming&limit=6`;
-      } else if (categoryTitle === "Top Airing Anime") {
-        apiUrl = `${malApiUrl}/anime/ranking?ranking_type=airing&limit=6`;
-      } else if (categoryTitle === "Top Anime Movies") {
-        apiUrl = `${malApiUrl}/anime/ranking?ranking_type=movie&limit=6`;
-      }
-
-      fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          "X-MAL-CLIENT-ID": clientId,
-          "content-type": "application/json",
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          setAnime(data.data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error(err);
-          setError(err);
-          setLoading(false);
-        });
+    // For ranking categories, use the existing logic:
+    let apiUrl = "";
+    if (categoryTitle === "Top Ranking Anime") {
+      apiUrl = `${malApiUrl}/anime/ranking?ranking_type=all&limit=6`;
+    } else if (categoryTitle === "Top Upcoming Anime") {
+      apiUrl = `${malApiUrl}/anime/ranking?ranking_type=upcoming&limit=6`;
+    } else if (categoryTitle === "Top Airing Anime") {
+      apiUrl = `${malApiUrl}/anime/ranking?ranking_type=airing&limit=6`;
+    } else if (categoryTitle === "Top Anime Movies") {
+      apiUrl = `${malApiUrl}/anime/ranking?ranking_type=movie&limit=6`;
     }
+
+    fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "X-MAL-CLIENT-ID": clientId,
+        "content-type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setAnime(data.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err);
+        setLoading(false);
+      });
   }, [categoryTitle, animeObject]);
+
+  console.log("anime data", categoryTitle, anime);
   return (
     <View style={styles.container}>
       <Text style={styles.categoryTitle}>{categoryTitle}</Text>
@@ -73,7 +66,7 @@ const AniCategories = ({ categoryTitle, animeObject }: AniCategoriesProps) => {
         <Text>{error}</Text>
       ) : (
         <FlatList
-          data={Anime?.data}
+          data={anime}
           horizontal={true}
           keyExtractor={(item) => item.node.id.toString()}
           showsHorizontalScrollIndicator={false}
