@@ -10,7 +10,7 @@ import { AnimeResponseItem } from "./animedata.types";
 
 export interface AniCategoriesProps{
   categoryTitle: string;
-  animeObject?: AnimeResponseItem;
+  animeObject?: AnimeResponseItem[];
 }
 
 
