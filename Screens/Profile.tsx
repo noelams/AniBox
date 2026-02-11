@@ -84,10 +84,6 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
   const uploadImageToBackend = async (imageUri: string, type = "profile") => {
     try {
       setImageUploading(true);
-      console.log("Uploading image with URI:", imageUri);
-      console.log("Backend URL:", backendUrl);
-      console.log("User Info:", userInfo);
-
       const formData: FormData = new FormData();
       formData.append("image", {
         uri: imageUri,
@@ -111,7 +107,6 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
       }
 
       const data = await response.json();
-      console.log("Image Upload Data:", data);
 
       const imageFromCloudinary = data.imageUrl;
 
@@ -197,36 +192,10 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
       );
 
       const validResults = results.filter((result) => result !== null);
-      console.log("favorites results:", validResults);
       setFavorites(validResults);
       return validResults;
     } catch (err) {
       console.error("Error fetching favorites:", err);
-      throw err;
-    }
-  };
-
-  const getRecentWatched = async () => {
-    try {
-      const response = await fetch(
-        `${backendUrl}/api/anime-log?status=watched&sort=desc&limit=4`,
-        {
-          headers: {
-            authorization: `Bearer ${userToken}`,
-          },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch recent watched: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const recentIds = data.animeid || [];
-      setRecentWatchedIds(recentIds);
-      return recentIds;
-    } catch (err) {
-      console.error("Error fetching recent watched:", err);
       throw err;
     }
   };
@@ -277,9 +246,6 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
       // Load profile data first
       const profileData = await getProfileData();
 
-      // Load recent watched
-      const recentIds = await getRecentWatched();
-
       // Load external API data in parallel
       const [favoritesResults, recentWatchedResults] = await Promise.all([
         fetchFavoritesFromApi(
@@ -287,8 +253,14 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
             (item: profileFavoritesResponse) => item.animeId,
           ) || [],
         ),
-        fetchRecentWatchedFromApi(recentIds),
+        fetchRecentWatchedFromApi(
+          profileData.recentWatched.map(
+            (item: profileFavoritesResponse) => item.animeId, //response schema is identical to favorite response
+          ) || [],
+        ),
       ]);
+      setRecentWatched(recentWatchedResults);
+      setFavorites(favoritesResults);
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert("Error", error.message);
@@ -297,8 +269,7 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
           details: error.message,
         });
       } else {
-        console.log("Unknown error:", error);
-        Alert.alert("Error", "Something went wrong");
+        Alert.alert("Error", "Unknown error");
       }
     } finally {
       setIsLoading(false);

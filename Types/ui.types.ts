@@ -109,5 +109,5 @@ export type ProfilePicProps = {
 export type SummaryBoxProps = {
     title: string,
     value: string | number,
-    color?:ColorKey
+    color?:ColorKey 
 }
