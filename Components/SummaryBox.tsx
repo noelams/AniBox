@@ -2,11 +2,14 @@ import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 import AppText from "./AppText";
 import { SummaryBoxProps } from "../Types/ui.types";
+import Colors from "../Constants/Colors";
 
 const SummaryBox = ({ value, title, color }: SummaryBoxProps) => {
+  const resolvedColor = color ? Colors[color] : undefined;
+
   return (
     <View style={styles.container}>
-      <Text style={{ color: color, fontWeight: "bold", fontSize: 26 }}>
+      <Text style={{ color: resolvedColor, fontWeight: "bold", fontSize: 26 }}>
         {value ? value : 0}
       </Text>
       <AppText title={title} style={{ fontSize: 14 }} />

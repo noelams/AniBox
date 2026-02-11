@@ -1,5 +1,6 @@
 // @ts-check
 //change studio type from any to correct type later
+//set status text color based off status
 
 import React, {
   useCallback,
@@ -45,12 +46,10 @@ import BottomSheet, {
 import ErrorScreen from "./ErrorScreen";
 import { Rating } from "react-native-ratings";
 import { AnimeLogData } from "../Types/animedata.types";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AniDetailsScreenProps } from "../Types/navigation.types";
 
 const AniDetails = ({ route }: AniDetailsScreenProps) => {
   const animeId = route.params.id;
-  const [statusColor, setStatusColor] = useState<ColorKey | null>(null);
   const [isFavoritesLoading, setIsFavoritesLoading] = useState(false);
   const { userToken } = useContext(AuthContext);
   const configs = Constants?.expoConfig?.extra;
@@ -169,7 +168,6 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
         review: logData.review,
         score: logData.score,
       };
-      console.log("Data:", data);
       const sendData = await fetch(`${backendUrl}/api/anime-log`, {
         method: "POST",
         headers: {
@@ -180,7 +178,6 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
       });
 
       const response = await sendData.json();
-      console.log(response);
       if (sendData.ok) {
         setParamsId(response.savedLog._id);
         return response;
@@ -206,7 +203,6 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
         review: logData.review,
         score: logData.score,
       };
-      console.log("Data:", data);
 
       const sendData = await fetch(`${backendUrl}/api/anime-log/${paramsId}`, {
         method: "PUT",
@@ -299,28 +295,14 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
     }
   };
 
-  const handleRatingChange = (newRating: number) => {
-    setLogData((prev) => ({
-      ...prev,
-      score: newRating,
-    }));
-  };
-
-  const reloadScreen = () => {
-    console.log("Reloading AniDetails Screen");
-  };
-
-  useEffect(() => {
-    if (status) {
-      if (status === "not_yet_aired") {
-        setStatusColor("lightGreen");
-      } else if (status === "finished_airing") {
-        setStatusColor("accent1");
-      } else {
-        setStatusColor("accent2");
-      }
+  const reloadScreen = async () => {
+    try {
+      await queryClient.refetchQueries({ queryKey: ["anime-log", animeId] });
+      await queryClient.refetchQueries({ queryKey: ["anime-data", animeId] });
+    } catch (error) {
+      console.error("Error:", error);
     }
-  }, [status]);
+  };
 
   useEffect(() => {
     if (logResponse?.log) {
@@ -387,7 +369,7 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
     bottomSheetRef.current?.expand();
   }, []);
 
-  if (isLoading || animeDataIsloading) {
+  if (animeDataIsloading) {
     return (
       <View style={styles.loadingContainer}>
         <Text>
@@ -552,7 +534,7 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
             <View>
               <AppText
                 title={status?.replace(/_/g, " ")}
-                style={[styles.status, { color: statusColor }]}
+                style={styles.status}
               />
               <View style={styles.titleContainer}>
                 <AppText title={title} style={styles.title} />
@@ -570,10 +552,17 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
             </View>
 
             <View style={styles.animeInfo}>
-              <AppText title={`Number of Episodes:${num_episodes}`} />
+              <Text>
+                {num_episodes ?? (
+                  <AppText
+                    title={`Number of Episodes\n${num_episodes}`}
+                    style={styles.animeInfoItem}
+                  />
+                )}
+              </Text>
               <AppText
-                title={`Average Episode Duration:
-              ${Math.floor(average_episode_duration / 60)} minutes`}
+                title={`Average Episode Duration\n${Math.floor(average_episode_duration / 60)} mins`}
+                style={styles.animeInfoItem}
               />
             </View>
           </View>
@@ -595,33 +584,32 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
               }
               disabled={isFavoritesLoading}
             >
-              <AppText
-                title={
-                  isFavoritesLoading ? (
-                    <ActivityIndicator size={"small"} color={"purple"} />
-                  ) : logData.hasFavorite ? (
-                    <Entypo name="add-to-list" size={24} color={"#fff"} />
-                  ) : (
+              <View style={styles.favoriteContainer}>
+                {logData.hasFavorite ? (
+                  <View style={styles.favoriteInnerContainer}>
+                    <Entypo name="add-to-list" size={18} color={"#333"} />
+                    <Text style={styles.favoriteText}>Add to Favorites </Text>
+                  </View>
+                ) : (
+                  <View style={styles.favoriteInnerContainer}>
                     <MaterialIcons
                       name="format-align-left"
-                      size={24}
-                      color="#fff"
+                      size={18}
+                      color="#333"
                     />
-                  )
-                }
-                style={styles.watchlistText}
-              />
+                    <Text style={styles.favoriteText}>Added to Favorites</Text>
+                  </View>
+                )}
+              </View>
             </TouchableOpacity>
-            {logData.hasFavorite ? (
-              <Text>Add to Favorites </Text>
-            ) : (
-              <Text>Added to Favorites</Text>
-            )}
           </View>
 
-          <View>
+          <View style={styles.ratingDataContainer}>
             <AppText title={"Ratings"} style={styles.ratingHeader} />
-            <AppText title={mean ? mean / 2 : "N/A"} style={styles.rating} />
+            <AppText
+              title={mean ? (mean / 2).toFixed(1) : "N/A"}
+              style={styles.rating}
+            />
           </View>
         </View>
 
@@ -739,7 +727,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    fontSize: 16,
+    fontSize: 28,
     fontWeight: "bold",
     color: "white",
   },
@@ -750,11 +738,15 @@ const styles = StyleSheet.create({
   },
   startDate: {
     marginLeft: 5,
-    fontSize: 7,
+    fontSize: 10,
   },
   animeInfo: {
     alignItems: "flex-start",
     justifyContent: "flex-start",
+    gap: 2,
+  },
+  animeInfoItem: {
+    fontWeight: "bold",
   },
   synopsisContainer: {
     marginHorizontal: 20,
@@ -767,27 +759,33 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     marginHorizontal: 10,
   },
   favoritesBtn: {
     marginVertical: 10,
+    marginHorizontal: 10,
     backgroundColor: Colors.secondary,
-    padding: 10,
+    padding: 3,
     width: "50%",
     borderRadius: 7,
     alignItems: "center",
   },
-  gotoWatchlist: {
-    marginVertical: 10,
-    backgroundColor: Colors.secondary,
-    padding: 8,
-    width: "30%",
-    borderRadius: 7,
-    alignItems: "center",
-  },
-  watchlistText: {
+  favoriteContainer: {
     color: "#333",
     fontWeight: "bold",
+    width: "100%",
+    flexDirection: "row",
+  },
+  favoriteInnerContainer: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-evenly",
+  },
+  favoriteText: { fontSize: 8 },
+  ratingDataContainer: {
+    alignItems: "center",
   },
   ratingHeader: {
     color: "rgba(255, 255, 255, 0.5)",
@@ -795,6 +793,7 @@ const styles = StyleSheet.create({
   },
   rating: {
     color: Colors.secondary,
+    fontSize: 26,
   },
   logBtn: {
     position: "absolute",
