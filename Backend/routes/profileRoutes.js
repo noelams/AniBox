@@ -17,6 +17,7 @@ router.get("/", verifyToken, async (req, res) => {
       watchedThisYear,
       favorites,
       recentFavorites,
+      recentWatched,
     ] = await Promise.all([
       AnimeLog.find({ userId, status: "want to watch" }),
       AnimeLog.find({ userId, status: "watched" }),
@@ -27,6 +28,9 @@ router.get("/", verifyToken, async (req, res) => {
       }),
       Favorites.find({ userId }),
       Favorites.find({ userId }).sort({ addedAt: -1 }).limit(4),
+      AnimeLog.find({ userId, status: "watched" })
+        .sort({ addedAt: -1 })
+        .limit(4),
     ]);
 
     res.status(200).json({
@@ -36,11 +40,13 @@ router.get("/", verifyToken, async (req, res) => {
       favoritesCount: favorites.length,
       favorites: favorites,
       recentFavorites: recentFavorites,
+      recentWatched: recentWatched,
       _id: userId,
       profileImage: req.user.profileImage,
       coverImage: req.user.coverImage,
     });
   } catch (err) {
+    console.error("Error:", err);
     res
       .status(500)
       .json({ message: "Failed to load profile stats", error: err.message });
@@ -48,47 +54,3 @@ router.get("/", verifyToken, async (req, res) => {
 });
 
 module.exports = router;
-
-data = {
-  _id: "68641e31b9abd2c44eddad43",
-  coverImage:
-    "https://res.cloudinary.com/dxo6mbjkc/image/upload/v1752759601/profileImages/wtr06hxudrrzlduejd9f.jpg",
-  favorites: [
-    {
-      __v: 0,
-      _id: "689e244fba29df8a69ff6fc5",
-      addedAt: "2025-08-14T18:00:47.492Z",
-      animeId: "21",
-      userId: "68641e31b9abd2c44eddad43",
-    },
-    {
-      __v: 0,
-      _id: "68aeb384b6b327699033496e",
-      addedAt: "2025-08-27T07:28:11.375Z",
-      animeId: "52807",
-      userId: "68641e31b9abd2c44eddad43",
-    },
-  ],
-  favoritesCount: 2,
-  profileImage:
-    "https://res.cloudinary.com/dxo6mbjkc/image/upload/v1752753401/profileImages/wilduvlodlzknl19vdch.jpg",
-  recentFavorites: [
-    {
-      __v: 0,
-      _id: "68aeb384b6b327699033496e",
-      addedAt: "2025-08-27T07:28:11.375Z",
-      animeId: "52807",
-      userId: "68641e31b9abd2c44eddad43",
-    },
-    {
-      __v: 0,
-      _id: "689e244fba29df8a69ff6fc5",
-      addedAt: "2025-08-14T18:00:47.492Z",
-      animeId: "21",
-      userId: "68641e31b9abd2c44eddad43",
-    },
-  ],
-  totalWatchedCount: 0,
-  watchedThisYearCount: 0,
-  watchlistCount: 14,
-};
