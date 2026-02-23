@@ -5,10 +5,17 @@ const Favorite = require("../models/Favorites");
 
 router.post("/", verifyToken, async (req, res) => {
   const { animeId } = req.body;
+  const Favorites = await Favorite.find({ userId: req.user._id, animeId });
+  if (Favorites.length > 0) {
+    return res
+      .status(400)
+      .json({ message: "Anime already in favorites", ok: false });
+  }
   const userId = req.user.id;
   if (!animeId) {
     return res.status(400).json({ message: "animeId required", ok: false });
   }
+
   try {
     const favorite = new Favorite({
       userId,
