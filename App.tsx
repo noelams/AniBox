@@ -11,6 +11,7 @@ import "react-native-reanimated";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { DevToolsBubble } from "react-native-react-query-devtools";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const queryClient = new QueryClient();
 
@@ -33,7 +34,9 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <UserInfoProvider>
-              <RootNavigator />
+              <SafeAreaProvider>
+                <RootNavigator />
+              </SafeAreaProvider>
             </UserInfoProvider>
           </AuthProvider>
           <DevToolsBubble queryClient={queryClient} />

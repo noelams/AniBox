@@ -1,5 +1,4 @@
 import {
-  SafeAreaView,
   Text,
   View,
   StyleSheet,
@@ -15,11 +14,12 @@ import { FlatList } from "react-native-gesture-handler";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { HomeStackParamList } from "../Types/navigation.types";
 import { SearchSuggestionResponse } from "../Types/animedata.types";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [suggestions, setSuggestions] = useState<SearchSuggestionResponse[]>(
-    []
+    [],
   );
   const [isLoading, setIsloading] = useState(false);
   const [emptySearchResult, setEmptySearchResult] = useState(false);
@@ -30,7 +30,7 @@ const Search = () => {
     try {
       setIsloading(true);
       const response = await fetch(
-        `https://api.jikan.moe/v4/anime?q=${query}&limit=5`
+        `https://api.jikan.moe/v4/anime?q=${query}&limit=5`,
       );
       const result = await response.json();
       const finalResult = result.data;
@@ -125,7 +125,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.backgroundColor,
-    paddingTop: 20,
   },
   searchInput: {
     backgroundColor: Colors.accent4,

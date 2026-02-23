@@ -1,5 +1,4 @@
 import {
-  SafeAreaView,
   View,
   StyleSheet,
   FlatList,
@@ -26,6 +25,7 @@ import {
   ProfileSummaryResponse,
 } from "../Types/screen.types";
 import { ProfileScreenProps } from "../Types/navigation.types";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Profile = ({ navigation }: ProfileScreenProps) => {
   const [profileData, setProfileData] = useState<ProfileDataResponse | null>(
@@ -245,6 +245,7 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
 
       // Load profile data first
       const profileData = await getProfileData();
+      console.log("Profile data loaded:", profileData.favorites.length);
 
       // Load external API data in parallel
       const [favoritesResults, recentWatchedResults] = await Promise.all([
@@ -439,7 +440,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.backgroundColor,
-    paddingTop: 40,
   },
   loadingContainer: {
     flex: 1,
