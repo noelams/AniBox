@@ -15,7 +15,6 @@ import {
   ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import CustomTitle from "./CustomTitle";
 import CustomInput from "./CustomInput";
 import CustomButton from "./CustomButton";
@@ -36,8 +35,8 @@ const AuthForm = ({
   const [formData, setFormData] = useState<Record<string, string>>(
     fields.reduce(
       (acc, f) => ({ ...acc, [f.name]: "" }),
-      {} as Record<string, string>
-    )
+      {} as Record<string, string>,
+    ),
   );
   const navigation = useNavigation();
 
@@ -45,7 +44,7 @@ const AuthForm = ({
 
   const handleSubmit = async () => {
     const emptyField = (Object.entries(formData) as [string, string][]).find(
-      ([key, value]) => !value.trim()
+      ([key, value]) => !value.trim(),
     );
 
     if (emptyField) {
@@ -76,7 +75,7 @@ const AuthForm = ({
   };
 
   return (
-    <SafeAreaView style={styles.appContainer}>
+    <View style={styles.appContainer}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -122,7 +121,7 @@ const AuthForm = ({
           </ScrollView>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
-    </SafeAreaView>
+    </View>
   );
 };
 

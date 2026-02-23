@@ -1,21 +1,13 @@
-import {
-  View,
-  Modal,
-  StyleSheet,
-  Button,
-  SafeAreaView,
-  ScrollView,
-} from "react-native";
+import { View, Modal, StyleSheet, Button, ScrollView } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import Colors from "../Constants/Colors";
-import AniCard from "../Components/AniCard";
 import HeaderSection from "../Components/HeaderSection";
 import AniCategories from "../Components/AniCategories";
 import { AuthContext } from "../Context/AuthContext";
 import UserContext from "../Context/UserContext";
 import ConfirmModal from "../Components/ConfirmModal";
-import { HomeScreen } from "../Types/navigation.types";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Home = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -24,7 +16,10 @@ const Home = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderSection profileImage={userInfo.profileImage} />
+      <HeaderSection
+        profileImage={userInfo.profileImage}
+        profileName={userInfo.username}
+      />
       <ScrollView style={styles.categoriesContainer}>
         <AniCategories categoryTitle={"Top Upcoming Anime"} />
         <AniCategories categoryTitle={"Top Airing Anime"} />

@@ -98,6 +98,7 @@ export interface CoverPhotoProps{
 
 export type HeaderSectionProps = {
     profileImage: string | null,
+    profileName?: string,
 }
 
 export type ProfilePicProps = {
