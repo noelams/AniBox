@@ -91,29 +91,15 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
     title,
     main_picture,
     start_date,
-    end_date,
     synopsis,
     mean,
-    rank,
-    popularity,
     nsfw,
-    created_at,
-    updated_at,
-    media_type,
     status,
-    genres,
     num_episodes,
-    start_season,
-    broadcast,
-    source,
     average_episode_duration,
-    rating,
-    pictures,
-    background,
     related_anime,
     recommendations,
     studios,
-    statistics,
   } = animeData ?? {}; // useQuery initially returns undefined before populating animeData
 
   const fetchAnimeData = async (
@@ -514,6 +500,10 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
           />
         </BottomSheetScrollView>
       </BottomSheetModal>
+      <BackButton
+        position={"absolute"}
+        absolutePositionStyles={{ top: 40, left: 10 }}
+      />
       <ScrollView>
         <View style={styles.imageContainer}>
           {main_picture ? (
@@ -521,10 +511,6 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
           ) : (
             <Text>No Image Available</Text>
           )}
-          <BackButton
-            position={"absolute"}
-            absolutePositionStyles={{ top: 10, left: 10 }}
-          />
         </View>
 
         <View style={styles.statusContainer}>
@@ -537,7 +523,7 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
                 style={styles.status}
               />
               <View style={styles.titleContainer}>
-                <AppText title={title} style={styles.title} />
+                <AppText title={title} style={styles.title} numberOfLines={2} />
                 <AppText
                   title={start_date?.split("-")[0]}
                   style={styles.startDate}
@@ -552,18 +538,23 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
             </View>
 
             <View style={styles.animeInfo}>
-              <Text>
-                {num_episodes ?? (
-                  <AppText
-                    title={`Number of Episodes\n${num_episodes}`}
-                    style={styles.animeInfoItem}
-                  />
-                )}
-              </Text>
-              <AppText
-                title={`Average Episode Duration\n${Math.floor(average_episode_duration / 60)} mins`}
-                style={styles.animeInfoItem}
-              />
+              <View>
+                <AppText title={`Episodes`} style={styles.animeInfoItem} />
+                <AppText
+                  title={num_episodes ? num_episodes.toString() : "N/A"}
+                />
+              </View>
+
+              <View>
+                <AppText title={`Avg Duration`} style={styles.animeInfoItem} />
+                <AppText
+                  title={
+                    average_episode_duration
+                      ? `${Math.floor(average_episode_duration / 60)} mins`
+                      : "N/A"
+                  }
+                />
+              </View>
             </View>
           </View>
         </View>
@@ -575,33 +566,36 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
 
         <View style={styles.ratingContainer}>
           <View>
-            <TouchableOpacity
-              style={styles.favoritesBtn}
-              onPress={
-                logData.hasFavorite
-                  ? handleRemoveFromFavorites
-                  : handleAddToFavorites
-              }
-              disabled={isFavoritesLoading}
-            >
-              <View style={styles.favoriteContainer}>
-                {logData.hasFavorite ? (
+            {!logData.hasFavorite ? (
+              <TouchableOpacity
+                onPress={handleAddToFavorites}
+                style={styles.favoritesBtn}
+                disabled={isFavoritesLoading}
+              >
+                <View style={styles.favoriteInnerContainer}>
+                  <MaterialIcons
+                    name="format-align-left"
+                    size={18}
+                    color="#333"
+                  />
+                  <Text style={styles.favoriteText}>Add to Favorites </Text>
+                </View>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.favoritesBtn}
+                onPress={handleRemoveFromFavorites}
+                disabled={isFavoritesLoading}
+              >
+                <View style={styles.favoriteContainer}>
                   <View style={styles.favoriteInnerContainer}>
                     <Entypo name="add-to-list" size={18} color={"#333"} />
-                    <Text style={styles.favoriteText}>Add to Favorites </Text>
-                  </View>
-                ) : (
-                  <View style={styles.favoriteInnerContainer}>
-                    <MaterialIcons
-                      name="format-align-left"
-                      size={18}
-                      color="#333"
-                    />
+
                     <Text style={styles.favoriteText}>Added to Favorites</Text>
                   </View>
-                )}
-              </View>
-            </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.ratingDataContainer}>
@@ -683,7 +677,6 @@ const styles = StyleSheet.create({
     color: "#ffffff",
   },
   modalFooter: {
-    // backgroundColor: Colors.backgroundColor,
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: Colors.accent3,
@@ -724,11 +717,11 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     flexDirection: "row",
-    alignItems: "center",
   },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: "bold",
+    maxWidth: "75%",
     color: "white",
   },
   studios: {
@@ -781,7 +774,7 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-evenly",
+    justifyContent: "space-between",
   },
   favoriteText: { fontSize: 8 },
   ratingDataContainer: {

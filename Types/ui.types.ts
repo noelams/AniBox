@@ -35,6 +35,7 @@ export interface BackButtonProps {
 export interface AppTextProps {
     title: string | ReactNode,
     style?: object,
+    numberOfLines?: number,
 }
 
 export interface LogButtonProps {
