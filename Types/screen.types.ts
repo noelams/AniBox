@@ -8,12 +8,14 @@ import { AnimeResponseItem } from "./animedata.types";
   showGoBack?: boolean;
 }
 
-export interface AniCategoriesProps <T = AnimeResponseItem>{
+
+// screen.types.ts
+export type AniCategoriesProps = {
   categoryTitle: string;
-  animeObject?: T[]; // Make it optional since not all categories will have this prop
-   keyExtractor?: (item: T) => string;
-    renderCard?: (item: T) => React.ReactElement;
-}
+  animeObject?: AnimeResponseItem[] | ProfileSummaryResponse[];
+  renderCard?: (item: any) => React.ReactElement; // optional override
+  keyExtractor?: (item: any) => string;           // optional override
+};
 
 
   export type ProfileErrorType = {

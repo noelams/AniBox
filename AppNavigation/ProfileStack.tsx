@@ -7,7 +7,7 @@ const Stack = createNativeStackNavigator<ProfileStackParamList>();
 
 const ProfileStack = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator id={undefined}>
       <Stack.Screen
         name="ProfileScreen"
         component={Profile}
