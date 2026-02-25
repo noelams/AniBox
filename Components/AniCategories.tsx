@@ -8,17 +8,26 @@ import {
 import React, { useEffect, useState } from "react";
 import AniCard from "./AniCard";
 import Constants from "expo-constants";
-import { AniCategoriesProps } from "../Types/screen.types";
+import {
+  AniCategoriesProps,
+  ProfileSummaryResponse,
+} from "../Types/screen.types";
 import { AnimeResponseItem } from "../Types/animedata.types";
+import AppText from "./AppText";
 
 const configs = Constants.expoConfig?.extra;
 const malApiUrl = configs?.malApiUrl;
 const clientId = configs?.clientId;
 
-const AniCategories = ({ categoryTitle, animeObject }: AniCategoriesProps) => {
-  const [anime, setAnime] = useState<AnimeResponseItem[] | null>();
+const AniCategories = <T,>({
+  categoryTitle,
+  animeObject,
+  renderCard,
+  keyExtractor,
+}: AniCategoriesProps<T>) => {
+  const [anime, setAnime] = useState<T[] | null>(null);
   const [Loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Reset state when category changes.
@@ -26,10 +35,7 @@ const AniCategories = ({ categoryTitle, animeObject }: AniCategoriesProps) => {
     setAnime(null);
     setError(null);
     // For ranking categories, use the existing logic:
-    if (categoryTitle === "Recommended For You") {
-      setAnime(animeObject);
-      setLoading(false);
-    } else if (categoryTitle === "Similar Anime") {
+    if (animeObject && animeObject.length > 0) {
       setAnime(animeObject);
       setLoading(false);
     } else {
@@ -42,6 +48,10 @@ const AniCategories = ({ categoryTitle, animeObject }: AniCategoriesProps) => {
         apiUrl = `${malApiUrl}/anime/ranking?ranking_type=airing&limit=6`;
       } else if (categoryTitle === "Top Anime Movies") {
         apiUrl = `${malApiUrl}/anime/ranking?ranking_type=movie&limit=6`;
+      } else {
+        setLoading(false);
+        setAnime([]);
+        return;
       }
 
       fetch(apiUrl, {
@@ -58,7 +68,7 @@ const AniCategories = ({ categoryTitle, animeObject }: AniCategoriesProps) => {
         })
         .catch((err) => {
           console.error(err);
-          setError(err);
+          setError(err.message);
           setLoading(false);
         });
     }
@@ -69,23 +79,32 @@ const AniCategories = ({ categoryTitle, animeObject }: AniCategoriesProps) => {
       {Loading ? (
         <ActivityIndicator size={"large"} color={"purple"} />
       ) : error ? (
-        <Text>{error}</Text>
+        <Text>Error: {error}</Text>
       ) : (
-        <FlatList
-          data={anime}
-          horizontal={true}
-          keyExtractor={(item) => item.node.id.toString()}
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => {
-            return (
-              <AniCard
-                title={item.node.title}
-                image={item.node.main_picture.medium}
-                id={item.node.id}
+        <>
+          {anime?.length === 0 ? (
+            <View
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                flex: 1,
+              }}
+            >
+              <AppText
+                title="No Data available for this category"
+                style={{ fontSize: 16 }}
               />
-            );
-          }}
-        />
+            </View>
+          ) : (
+            <FlatList
+              data={anime}
+              horizontal
+              keyExtractor={keyExtractor}
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item }) => renderCard(item)}
+            />
+          )}
+        </>
       )}
     </View>
   );
