@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   ImageSourcePropType,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import React, { useEffect, useState, useContext } from "react";
 import Colors from "../Constants/Colors";
@@ -28,6 +29,7 @@ import { ProfileScreenProps } from "../Types/navigation.types";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AniCategories from "../Components/AniCategories";
 import { AnimeResponseItem } from "../Types/animedata.types";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const Profile = ({ navigation }: ProfileScreenProps) => {
   const [profileData, setProfileData] = useState<ProfileDataResponse | null>(
@@ -238,8 +240,6 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
       throw err;
     }
   };
-  console.log(favorites[0]?.id, "favorites in profile");
-
   // Main data loading function
   const loadAllData = async () => {
     try {
@@ -248,7 +248,6 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
 
       // Load profile data first
       const profileData = await getProfileData();
-      console.log("Profile data loaded:", profileData.favorites.length);
 
       // Load external API data in parallel
       const [favoritesResults, recentWatchedResults] = await Promise.all([
@@ -329,9 +328,19 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
       </View>
     );
   }
+  const SettingsButton = () => {
+    return (
+      <View>
+        <TouchableOpacity onPress={() => ""}>
+          <MaterialCommunityIcons name="cog" size={16} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
+      <SettingsButton />
       <ScrollView>
         <CoverPhoto
           onChangeCover={() => handleImageChange(setCoverImage, "cover")}

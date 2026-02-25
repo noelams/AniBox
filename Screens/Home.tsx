@@ -1,4 +1,4 @@
-import { View, Modal, StyleSheet, Button, ScrollView } from "react-native";
+import { StyleSheet, Button, ScrollView } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import React, { useContext, useState } from "react";
 import Colors from "../Constants/Colors";
@@ -8,8 +8,6 @@ import { AuthContext } from "../Context/AuthContext";
 import UserContext from "../Context/UserContext";
 import ConfirmModal from "../Components/ConfirmModal";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AnimeResponseItem } from "../Types/animedata.types";
-import AniCard from "../Components/AniCard";
 
 const Home = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -23,50 +21,10 @@ const Home = () => {
         profileName={userInfo.username}
       />
       <ScrollView style={styles.categoriesContainer}>
-        <AniCategories
-          categoryTitle={"Top Upcoming Anime"}
-          renderCard={(item: AnimeResponseItem) => (
-            <AniCard
-              title={item.node.title}
-              image={item.node.main_picture.medium}
-              id={item.node.id}
-            />
-          )}
-          keyExtractor={(item: AnimeResponseItem) => item.node.id.toString()}
-        />
-        <AniCategories
-          categoryTitle={"Top Airing Anime"}
-          renderCard={(item: AnimeResponseItem) => (
-            <AniCard
-              title={item.node.title}
-              image={item.node.main_picture.medium}
-              id={item.node.id}
-            />
-          )}
-          keyExtractor={(item: AnimeResponseItem) => item.node.id.toString()}
-        />
-        <AniCategories
-          categoryTitle={"Top Ranking Anime"}
-          renderCard={(item: AnimeResponseItem) => (
-            <AniCard
-              title={item.node.title}
-              image={item.node.main_picture.medium}
-              id={item.node.id}
-            />
-          )}
-          keyExtractor={(item: AnimeResponseItem) => item.node.id.toString()}
-        />
-        <AniCategories
-          categoryTitle={"Top Anime Movies"}
-          renderCard={(item: AnimeResponseItem) => (
-            <AniCard
-              title={item.node.title}
-              image={item.node.main_picture.medium}
-              id={item.node.id}
-            />
-          )}
-          keyExtractor={(item: AnimeResponseItem) => item.node.id.toString()}
-        />
+        <AniCategories categoryTitle={"Top Upcoming Anime"} />
+        <AniCategories categoryTitle={"Top Airing Anime"} />
+        <AniCategories categoryTitle={"Top Ranking Anime"} />
+        <AniCategories categoryTitle={"Top Anime Movies"} />
         <Button
           title="Log Out"
           onPress={() => {

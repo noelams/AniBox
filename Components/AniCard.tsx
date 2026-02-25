@@ -3,12 +3,12 @@ import React from "react";
 import Colors from "../Constants/Colors";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { AniCardProps } from "../Types/animedata.types";
-import { HomeStackParamList } from "../Types/navigation.types";
+import { BottomTabsParamList } from "../Types/navigation.types";
 
 const AniCard = ({ title, image, id }: AniCardProps) => {
-  const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
+  const navigation = useNavigation<NavigationProp<BottomTabsParamList>>();
   const handleNavigate = () => {
-    navigation.navigate("AniDetails", { id });
+    navigation.navigate("Home", { screen: "AniDetails", params: { id } });
   };
   return (
     <TouchableOpacity style={styles.container} onPress={handleNavigate}>

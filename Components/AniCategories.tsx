@@ -24,8 +24,10 @@ const AniCategories = <T,>({
   animeObject,
   renderCard,
   keyExtractor,
-}: AniCategoriesProps<T>) => {
-  const [anime, setAnime] = useState<T[] | null>(null);
+}: AniCategoriesProps) => {
+  const [anime, setAnime] = useState<
+    AnimeResponseItem[] | ProfileSummaryResponse[] | null
+  >(null);
   const [Loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,6 +75,17 @@ const AniCategories = <T,>({
         });
     }
   }, [categoryTitle, animeObject]);
+
+  const defaultRenderCard = (item: AnimeResponseItem) => (
+    <AniCard
+      title={item.node.title}
+      image={item.node.main_picture.medium}
+      id={item.node.id}
+    />
+  );
+
+  const defaultKeyExtractor = (item: AnimeResponseItem) =>
+    item.node.id.toString();
   return (
     <View style={styles.container}>
       <Text style={styles.categoryTitle}>{categoryTitle}</Text>
@@ -97,11 +110,13 @@ const AniCategories = <T,>({
             </View>
           ) : (
             <FlatList
-              data={anime}
+              data={anime as any[]}
               horizontal
-              keyExtractor={keyExtractor}
+              keyExtractor={keyExtractor ? keyExtractor : defaultKeyExtractor}
               showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => renderCard(item)}
+              renderItem={({ item }) =>
+                renderCard ? renderCard(item) : defaultRenderCard(item)
+              }
             />
           )}
         </>
