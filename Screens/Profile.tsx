@@ -26,6 +26,8 @@ import {
 } from "../Types/screen.types";
 import { ProfileScreenProps } from "../Types/navigation.types";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AniCategories from "../Components/AniCategories";
+import { AnimeResponseItem } from "../Types/animedata.types";
 
 const Profile = ({ navigation }: ProfileScreenProps) => {
   const [profileData, setProfileData] = useState<ProfileDataResponse | null>(
@@ -236,6 +238,7 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
       throw err;
     }
   };
+  console.log(favorites[0]?.id, "favorites in profile");
 
   // Main data loading function
   const loadAllData = async () => {
@@ -372,62 +375,40 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
 
         <View>
           <View style={styles.categoryContainer}>
-            <AppText
-              title={"Your Favorites"}
-              style={{ fontSize: 14, alignSelf: "center", marginTop: 10 }}
-            />
-            <View style={styles.categoryList}>
-              {favorites.length > 0 ? (
-                <FlatList
-                  data={favorites}
-                  horizontal
-                  keyExtractor={(item) => item.id.toString()}
-                  showsHorizontalScrollIndicator={false}
-                  renderItem={({ item }) => (
-                    <AniCard
-                      title={item?.title}
-                      image={item?.main_picture?.medium}
-                      id={item?.id}
-                    />
-                  )}
-                />
-              ) : (
-                <AppText
-                  title={"No Favorites Yet"}
-                  style={{ fontSize: 18, alignSelf: "center", marginTop: 10 }}
+            <AniCategories
+              categoryTitle="Your Favorites"
+              animeObject={favorites}
+              renderCard={(item: ProfileSummaryResponse) => (
+                <AniCard
+                  title={item.title}
+                  id={item.id}
+                  image={item.main_picture?.medium}
                 />
               )}
-            </View>
+              keyExtractor={(item: ProfileSummaryResponse) =>
+                item.id.toString()
+              }
+            />
           </View>
 
           <View style={{ height: 1, backgroundColor: "gray", marginTop: 10 }} />
 
           <View style={styles.categoryContainer}>
-            <AppText
-              title={"Recently Watched"}
-              style={{ fontSize: 14, alignSelf: "center", marginTop: 10 }}
-            />
             <View style={styles.categoryList}>
-              {recentWatched.length > 0 ? (
-                <FlatList
-                  data={recentWatched}
-                  horizontal
-                  keyExtractor={(item) => item.id.toString()}
-                  showsHorizontalScrollIndicator={false}
-                  renderItem={({ item }) => (
-                    <AniCard
-                      title={item?.title}
-                      image={item?.main_picture?.medium}
-                      id={item?.id}
-                    />
-                  )}
-                />
-              ) : (
-                <AppText
-                  title={"Nothing Watched Recently"}
-                  style={{ fontSize: 18, alignSelf: "center", marginTop: 10 }}
-                />
-              )}
+              <AniCategories
+                categoryTitle="Recently Watched"
+                animeObject={recentWatched}
+                renderCard={(item: ProfileSummaryResponse) => (
+                  <AniCard
+                    title={item.title}
+                    id={item.id}
+                    image={item.main_picture?.medium}
+                  />
+                )}
+                keyExtractor={(item: ProfileSummaryResponse) =>
+                  item.id.toString()
+                }
+              />
             </View>
           </View>
         </View>

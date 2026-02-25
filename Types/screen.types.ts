@@ -8,9 +8,11 @@ import { AnimeResponseItem } from "./animedata.types";
   showGoBack?: boolean;
 }
 
-export interface AniCategoriesProps{
+export interface AniCategoriesProps <T = AnimeResponseItem>{
   categoryTitle: string;
-  animeObject?: AnimeResponseItem[];
+  animeObject?: T[]; // Make it optional since not all categories will have this prop
+   keyExtractor?: (item: T) => string;
+    renderCard?: (item: T) => React.ReactElement;
 }
 
 
