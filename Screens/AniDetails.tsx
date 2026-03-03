@@ -17,6 +17,8 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  Modal,
+  TextInput,
 } from "react-native";
 
 import ConfirmModal from "../Components/ConfirmModal";
@@ -47,6 +49,7 @@ import ErrorScreen from "./ErrorScreen";
 import { Rating } from "react-native-ratings";
 import { AnimeLogData } from "../Types/animedata.types";
 import { AniDetailsScreenProps } from "../Types/navigation.types";
+import LogModal from "../Components/LogModal";
 
 const AniDetails = ({ route }: AniDetailsScreenProps) => {
   const animeId = route.params.id;
@@ -56,7 +59,6 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
   const malApiUrl = configs?.malApiUrl;
   const backendUrl = configs?.backendUrl;
   const clientId = configs?.clientId;
-  const [inputHeight, setInputHeight] = useState(0);
   const [hasLog, setHasLog] = useState(false);
   const [modalIsVisible, setModalIsVisible] = useState(false);
   const [logData, setLogData] = useState<AnimeLogData>({
@@ -141,8 +143,6 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
       throw new Error(`Error fetching log: ${fetchLogData.status}`);
     }
     const logData = await fetchLogData.json();
-
-    console.log("Loaded Log Data:", logData);
     return logData && Object.keys(logData).length > 0 ? logData : null;
   };
 
@@ -171,13 +171,11 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
         throw new Error(response.message || "Failed to create log");
       }
     } catch (err) {
-      console.error("Error sending Log Data:", err);
-      return null;
+      throw err;
     }
   };
 
   const handleUpdateLog = async () => {
-    console.log("Pressed Update Log");
     if (!paramsId) {
       throw new Error("Log ID is missing, cannot update.");
     }
@@ -206,7 +204,7 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
         throw new Error(response.message || "Failed to update log");
       }
     } catch (err) {
-      console.error("Error sending Log Data:", err);
+      throw err;
     }
   };
 
@@ -223,7 +221,6 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
         },
       );
       const data = response.json();
-      console.log(data);
     } catch (err) {
       console.error("Error deleting Log Data:", err);
     }
@@ -245,7 +242,6 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
         setLogData((prev) => {
           return { ...prev, hasFavorite: true };
         });
-        console.log("Added to favorites:", data);
       } else {
         console.error("Failed to add to favorites:", data);
       }
@@ -267,7 +263,6 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
       });
       const data = await response.json();
       if (response.ok) {
-        console.log("Deleted:", data);
         setLogData((prev) => {
           return { ...prev, hasFavorite: false };
         });
@@ -323,22 +318,28 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
 
   const { mutateAsync: createLog, isPending: isCreating } = useMutation({
     mutationFn: handleCreateLog,
-    onSuccess: (newLog) => {
-      queryClient.setQueryData([`anime-log-${animeId}`], newLog);
-      bottomSheetRef.current?.close();
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["anime-log", animeId] });
+      setModalIsVisible(false);
       showSuccessToast();
     },
-    onError: showErrorToast,
+    onError: () => {
+      setModalIsVisible(false);
+      showErrorToast();
+    },
   });
 
   const { mutateAsync: updateLog, isPending: isUpdating } = useMutation({
     mutationFn: handleUpdateLog,
-    onSuccess: (updatedLog) => {
-      queryClient.setQueryData([`anime-log-${animeId}`], updatedLog);
-      bottomSheetRef.current?.close();
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["anime-log", animeId] });
+      setModalIsVisible(false);
       showSuccessToast();
     },
-    onError: showErrorToast,
+    onError: () => {
+      setModalIsVisible(false);
+      showErrorToast();
+    },
   });
 
   const { mutateAsync: deleteLog } = useMutation({
@@ -350,10 +351,6 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
       showSuccessToast();
     },
   });
-
-  const handlePresentModalPress = useCallback(() => {
-    bottomSheetRef.current?.expand();
-  }, []);
 
   if (animeDataIsloading) {
     return (
@@ -371,135 +368,18 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
 
   return (
     <View style={styles.container}>
-      <BottomSheetModal
-        style={styles.modal}
-        ref={bottomSheetRef}
-        snapPoints={snapPoints}
-        enableDynamicSizing={false}
-      >
-        <BottomSheetScrollView
-          ref={scrollRef}
-          keyboardShouldPersistTaps={"always"}
-          style={styles.modalContainer}
-        >
-          {/* close button */}
-          <TouchableOpacity
-            style={styles.closeBtn}
-            onPress={() => bottomSheetRef.current?.close()}
-          >
-            <MaterialCommunityIcons name="close" size={25} color={"#ffffff"} />
-          </TouchableOpacity>
-
-          <View style={styles.logStatusContainer}>
-            <StatusButton
-              iconName={logData.status === "watched" ? "eye" : "eye-outline"}
-              label={"Watched"}
-              onPress={() =>
-                setLogData((prev) => ({
-                  ...prev,
-                  status: "watched",
-                }))
-              }
-            />
-            <StatusButton
-              iconName={
-                logData.status === "want to watch" ? "pin" : "pin-outline"
-              }
-              label={"Want to Watch"}
-              onPress={() =>
-                setLogData((prev) => ({
-                  ...prev,
-                  status: "want to watch",
-                }))
-              }
-            />
-            <StatusButton
-              iconName={
-                logData.status === "watching"
-                  ? "play-circle"
-                  : "play-circle-outline"
-              }
-              label={"Watching"}
-              onPress={() =>
-                setLogData((prev) => ({
-                  ...prev,
-                  status: "watching",
-                }))
-              }
-            />
-          </View>
-          <View style={styles.modalRatingContainer}>
-            <Rating
-              tintColor={Colors.backgroundColor}
-              minValue={0.5}
-              fractions={1}
-              jumpValue={0.5}
-              type="star"
-              ratingCount={5}
-              onFinishRating={(rating: number) => {
-                console.log("Selected Rating:", rating);
-                setLogData((prev) => ({
-                  ...prev,
-                  score: rating,
-                }));
-              }}
-            />
-            <Text style={styles.modalRatingText}>Rate</Text>
-          </View>
-
-          <View style={styles.inputContainer}>
-            <BottomSheetTextInput
-              editable
-              multiline
-              value={logData.review}
-              maxLength={200}
-              placeholder="Add a Review"
-              placeholderTextColor={Colors.placeholder}
-              onChangeText={(text) => {
-                setLogData((prev) => ({ ...prev, review: text }));
-              }}
-              onContentSizeChange={(event) => {
-                setInputHeight(event.nativeEvent.contentSize.height);
-              }}
-              style={[styles.textInput, { height: Math.max(80, inputHeight) }]}
-            />
-          </View>
-          <CustomButton
-            title="Delete Log"
-            onPress={() => setModalIsVisible(true)}
-            disabled={!hasLog}
-            customStyles={{
-              backgroundColor: Colors.accent1,
-              marginBottom: 20,
-            }}
-          />
-
-          <View style={styles.modalFooter}>
-            <CustomButton
-              disabled={isCreating || isUpdating}
-              onPress={() => {
-                console.log("Save Changes Pressed");
-                createLog();
-              }}
-              title={
-                isCreating || isUpdating ? (
-                  <ActivityIndicator size={"small"} color={"purple"} />
-                ) : (
-                  "SAVE CHANGES"
-                )
-              }
-              customStyles={styles.saveButton}
-              customTextStyles={{ fontWeight: "bold" }}
-            />
-          </View>
-          <ConfirmModal
-            visible={modalIsVisible}
-            onClose={() => setModalIsVisible(false)}
-            onConfirm={() => deleteLog()}
-            message="Are you sure you want to Delete this Log?"
-          />
-        </BottomSheetScrollView>
-      </BottomSheetModal>
+      <LogModal
+        modalIsVisible={modalIsVisible}
+        setModalIsVisible={setModalIsVisible}
+        title={title}
+        main_picture={main_picture}
+        start_date={start_date}
+        logData={logData}
+        setLogData={setLogData}
+        hasLog={hasLog}
+        onSubmit={hasLog ? updateLog : createLog}
+        isLoading={isCreating || isUpdating}
+      />
       <BackButton
         position={"absolute"}
         absolutePositionStyles={{ top: 40, left: 10 }}
@@ -619,7 +499,7 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
       </ScrollView>
       <LogButton
         customStyles={styles.logBtn}
-        onPress={handlePresentModalPress}
+        onPress={() => setModalIsVisible(true)}
       />
       <Toast />
     </View>
@@ -634,8 +514,44 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     backgroundColor: Colors.backgroundColor,
+    flex: 1,
     borderColor: Colors.accent2,
     paddingBottom: 80,
+    gap: 20,
+    paddingHorizontal: 20,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 20,
+    marginTop: 50,
+  },
+  modalImageContainer: {
+    flexDirection: "row",
+    width: "100%",
+    height: 200,
+  },
+  modalImg: {
+    width: 150,
+    height: "100%",
+    borderRadius: 10,
+  },
+
+  reviewInputContainer: {
+    minHeight: 120,
+    marginHorizontal: 12,
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: "#000",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  textInput: {
+    padding: 12,
+    color: "#fff",
+    fontSize: 14,
+    height: 120,
+    backgroundColor: "#3D3B54",
   },
   closeBtn: {
     width: 30,
@@ -671,10 +587,6 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     borderWidth: 2,
     borderColor: Colors.placeholder,
-  },
-  textInput: {
-    textAlignVertical: "top",
-    color: "#ffffff",
   },
   modalFooter: {
     padding: 16,

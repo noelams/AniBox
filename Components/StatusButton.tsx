@@ -10,16 +10,19 @@ const StatusButton = ({
   customStyles,
   label,
   customLabelStyles,
+  disabled = false,
+
   onPress,
 }: StatusButtonProps) => {
   return (
     <TouchableOpacity
       style={[customStyles, styles.statusButton]}
       onPress={onPress}
+      disabled={disabled}
     >
       <MaterialCommunityIcons
         name={iconName}
-        size={size ?? 25}
+        size={size ?? 20}
         color={iconColor}
       />
       <Text style={[styles.label, customLabelStyles]}>{label}</Text>
@@ -36,7 +39,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   label: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "bold",
     color: "#ffffff",
   },
