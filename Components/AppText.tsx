@@ -1,7 +1,7 @@
 import { StyleSheet, Text } from "react-native";
 import { AppTextProps } from "../Types/ui.types";
 
-const AppText = ({ title, style, numberOfLines = 1 }: AppTextProps) => {
+const AppText = ({ title, style, numberOfLines }: AppTextProps) => {
   return (
     <Text style={[styles.defaultText, style]} numberOfLines={numberOfLines}>
       {title}

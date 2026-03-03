@@ -14,6 +14,7 @@ const BackButton = ({
   absolutePositionStyles,
   iconSize = 25,
   backgroundColor = "rgba(0,0,0,0.5)",
+  onPress,
 }: BackButtonProps) => {
   const navigation = useNavigation();
   return (
@@ -24,7 +25,13 @@ const BackButton = ({
         absolutePositionStyles,
         customContainerStyles,
       ]}
-      onPress={() => navigation.goBack()}
+      onPress={() => {
+        if (onPress) {
+          onPress();
+        } else {
+          navigation.goBack();
+        }
+      }}
     >
       <MaterialCommunityIcons
         name="arrow-left"

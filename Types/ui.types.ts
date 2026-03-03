@@ -30,6 +30,7 @@ export interface BackButtonProps {
     absolutePositionStyles?: Object,
     iconSize?: number,
     backgroundColor?: string,
+    onPress?: () => void,
 }
 
 export interface AppTextProps {
@@ -56,6 +57,7 @@ export interface StatusButtonProps{
     label: string,
     customLabelStyles?: Object,
     onPress:()=> void,
+    disabled?: boolean,
 }
 
 export type AuthField = {
