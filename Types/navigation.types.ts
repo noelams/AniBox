@@ -11,11 +11,15 @@ export interface RootStackParamList {
 }
 
 export type BottomTabsParamList ={
-    Home: NavigatorScreenParams<HomeStackParamList>;
+    Home: NavigatorScreenParams<SideDrawerParamlist>;
     Profile: NavigatorScreenParams<ProfileStackParamList>;
     Search: undefined;
 }
 
+export type SideDrawerParamlist={
+    home: NavigatorScreenParams<HomeStackParamList>;
+    settings: undefined;
+}
 export type HomeStackParamList ={
   HomeScreen: undefined;
   AniDetails: { id: number };

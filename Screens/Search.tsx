@@ -12,7 +12,10 @@ import CustomTitle from "../Components/CustomTitle";
 import CustomInput from "../Components/CustomInput";
 import { FlatList } from "react-native-gesture-handler";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { HomeStackParamList } from "../Types/navigation.types";
+import {
+  BottomTabsParamList,
+  HomeStackParamList,
+} from "../Types/navigation.types";
 import { SearchSuggestionResponse } from "../Types/animedata.types";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -23,8 +26,7 @@ const Search = () => {
   );
   const [isLoading, setIsloading] = useState(false);
   const [emptySearchResult, setEmptySearchResult] = useState(false);
-
-  const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
+  const navigation = useNavigation<NavigationProp<BottomTabsParamList>>();
 
   const fetchResults = async (query: string) => {
     try {
@@ -51,7 +53,10 @@ const Search = () => {
 
   const handlePress = (item: SearchSuggestionResponse) => {
     const id = item.mal_id;
-    navigation.navigate("AniDetails", { id });
+    navigation.navigate("Home", {
+      screen: "home",
+      params: { screen: "AniDetails", params: { id } },
+    });
     setSearchQuery("");
     setSuggestions([]);
   };

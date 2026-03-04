@@ -15,6 +15,7 @@
     "@kolking/react-native-rating": "^1.4.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^7.2.1",
+    "@react-navigation/drawer": "^7.9.4",
     "@react-navigation/native": "^7.0.15",
     "@react-navigation/native-stack": "^7.2.1",
     "@tanstack/react-query": "^5.85.5",

@@ -5,6 +5,7 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import HomeStack from "./HomeStack";
 import ProfileStack from "./ProfileStack";
 import { BottomTabsParamList } from "../Types/navigation.types";
+import SideDrawer from "./SideDrawer";
 
 const Tab = createBottomTabNavigator<BottomTabsParamList>();
 const MainNavigator = () => {
@@ -20,7 +21,7 @@ const MainNavigator = () => {
     >
       <Tab.Screen
         name="Home"
-        component={HomeStack}
+        component={SideDrawer}
         options={{
           tabBarIcon: ({ color }) => (
             <Ionicons name="home" size={20} color={color} />
