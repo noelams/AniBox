@@ -63,6 +63,7 @@ const SideDrawer = () => {
           drawerIcon: ({ color }) => (
             <MaterialCommunityIcons name="home" size={24} color={color} />
           ),
+          title: "Home",
         }}
       />
       <Drawer.Screen
