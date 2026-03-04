@@ -8,7 +8,10 @@ import { BottomTabsParamList } from "../Types/navigation.types";
 const AniCard = ({ title, image, id }: AniCardProps) => {
   const navigation = useNavigation<NavigationProp<BottomTabsParamList>>();
   const handleNavigate = () => {
-    navigation.navigate("Home", { screen: "AniDetails", params: { id } });
+    navigation.navigate("Home", {
+      screen: "home",
+      params: { screen: "AniDetails", params: { id } },
+    });
   };
   return (
     <TouchableOpacity style={styles.container} onPress={handleNavigate}>

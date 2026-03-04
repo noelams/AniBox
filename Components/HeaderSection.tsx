@@ -1,13 +1,31 @@
-import { View, StyleSheet, Image } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Image,
+  Button,
+  TouchableOpacity,
+} from "react-native";
 import React from "react";
 import { HeaderSectionProps } from "../Types/ui.types";
 import AppText from "./AppText";
 import Colors from "../Constants/Colors";
+import { useNavigation } from "@react-navigation/native";
+import { DrawerNavigationProp } from "@react-navigation/drawer";
+import { SideDrawerParamList } from "../Types/navigation.types";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const HeaderSection = ({ profileImage, profileName }: HeaderSectionProps) => {
+  const navigation = useNavigation<DrawerNavigationProp<SideDrawerParamList>>();
   return (
     <View style={styles.container}>
       <View style={styles.headerContent}>
+        <TouchableOpacity
+          onPress={() => navigation.toggleDrawer()}
+          style={{ padding: 10 }}
+        >
+          <MaterialCommunityIcons name="menu" size={28} />
+        </TouchableOpacity>
+
         <AppText
           title={`Hello, ${profileName}`}
           style={{ fontSize: 24, color: Colors.primary, fontWeight: "bold" }}
@@ -33,7 +51,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginTop: 30,
     marginBottom: 10,
-    marginHorizontal: 20,
+    marginHorizontal: 10,
   },
   headerContent: {
     flexDirection: "row",
