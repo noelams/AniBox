@@ -21,35 +21,23 @@ import {
   TextInput,
 } from "react-native";
 
-import ConfirmModal from "../Components/ConfirmModal";
-
 import Colors, { ColorKey } from "../Constants/Colors";
 import AppText from "../Components/AppText";
 import AniCategories from "../Components/AniCategories";
 import Constants from "expo-constants";
 import BackButton from "../Components/BackButton";
 import LogButton from "../Components/LogButton";
-import {
-  Entypo,
-  MaterialIcons,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
-import StatusButton from "../Components/StatusButton";
+import { Entypo, MaterialIcons } from "@expo/vector-icons";
 import { AuthContext } from "../Context/AuthContext";
-import CustomButton from "../Components/CustomButton";
 import Toast from "react-native-toast-message";
 import { ScrollView } from "react-native-gesture-handler";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import BottomSheet, {
-  BottomSheetModal,
-  BottomSheetTextInput,
-  BottomSheetScrollView,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import ErrorScreen from "./ErrorScreen";
-import { Rating } from "react-native-ratings";
-import { AnimeLogData } from "../Types/animedata.types";
+import { AnimeDataType, AnimeLogData } from "../Types/animedata.types";
 import { AniDetailsScreenProps } from "../Types/navigation.types";
 import LogModal from "../Components/LogModal";
+import { createGetQueryHook } from "../api/Hooks/useGet";
 
 const AniDetails = ({ route }: AniDetailsScreenProps) => {
   const animeId = route.params.id;
@@ -80,14 +68,25 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
     queryFn: () => handleLoadLog(animeId, userToken),
   });
 
+  const useGetAnimeData = createGetQueryHook<AnimeDataType>({
+    endpoint: `/anime/${animeId}`,
+    queryKey: [`anime-data-${animeId}`],
+    requestDestination: "MAL",
+  });
+
   const {
     data: animeData,
     isLoading: animeDataIsloading,
     isError: animeDataIsError,
-  } = useQuery({
-    queryKey: ["anime-data", animeId],
-    queryFn: () => fetchAnimeData(malApiUrl, animeId, clientId),
+    error,
+  } = useGetAnimeData({
+    query: {
+      fields:
+        "title,main_picture,start_date,synopsis,mean,nsfw,status,num_episodes,average_episode_duration,related_anime,recommendations,studios",
+    },
   });
+
+  console.log("custom hook anime data", animeData, error);
 
   const {
     title,
@@ -103,29 +102,6 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
     recommendations,
     studios,
   } = animeData ?? {}; // useQuery initially returns undefined before populating animeData
-
-  const fetchAnimeData = async (
-    malApiUrl: string,
-    animeId: number,
-    clientId: string,
-  ) => {
-    try {
-      const apiUrl = `${malApiUrl}/anime/${animeId}?fields=id,title,main_picture,start_date,end_date,synopsis,mean,rank,popularity,nsfw,created_at,updated_at,media_type,status,genres,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,recommendations,studios,statistics`;
-      const fetchAnimeData = await fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          "X-MAL-CLIENT-ID": `${clientId}`,
-          "content-type": "application/json",
-        },
-      });
-
-      const response = await fetchAnimeData.json();
-      return response;
-    } catch (err) {
-      console.error("Error Fetching Anime Data", err);
-      return null;
-    }
-  };
 
   const handleLoadLog = async (animeId: number, userToken: string) => {
     const fetchLogData = await fetch(
