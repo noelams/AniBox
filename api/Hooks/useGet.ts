@@ -6,7 +6,8 @@ import {
 } from "@tanstack/react-query";
 import { CreateQueryHookArgs } from "../../Types/hooks.types";
 import { axiosInstanceBackend, axiosInstanceMal } from "../config/axios";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
+import { AuthContext } from "../../Context/AuthContext";
 
 export function createGetQueryHook<
   TData,
@@ -32,10 +33,10 @@ export function createGetQueryHook<
     headers?: Record<string, string | undefined>;
   }) => {
     const queryClient = useQueryClient();
+    const { userToken } = useContext(AuthContext);
 
     const queryFn = async (): Promise<TData> => {
       let url = endpoint;
-      console.log("Fetching URL:", url);
       if (params?.route) {
         url = Object.entries(params.route).reduce(
           (acc, [key, value]) => acc.replaceAll(`:${key}`, String(value)),
@@ -54,19 +55,23 @@ export function createGetQueryHook<
           url += `?${query.toString()}`;
         }
       }
-      const headers = { ...params?.headers };
+
+      const headers = {
+        ...params?.headers,
+        ...(requestDestination ? { Authorization: `Bearer ${userToken}` } : {}),
+      };
       const axiosInstance =
         requestDestination === "BACKEND"
           ? axiosInstanceBackend
           : axiosInstanceMal;
       const response = await axiosInstance.get(url, { headers });
+      console.log("Fetching new URL:", url);
       return response.data as TData;
     };
 
     const query = useQuery({
       queryKey: [...queryKey, params?.query, params?.route],
       queryFn,
-      enabled: !!params?.query?.animeId,
     });
     useEffect(() => {
       if (query.isSuccess) {

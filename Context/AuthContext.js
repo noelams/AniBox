@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useState, createContext, useEffect } from "react";
-import { setAuthToken } from "../api/config/axios";
+// import { setAuthToken } from "../api/config/axios";
 
 export const AuthContext = createContext();
 
@@ -28,6 +28,7 @@ export const AuthProvider = ({ children }) => {
         const token = await AsyncStorage.getItem("token");
         if (token) {
           setUserToken(token);
+          // setAuthToken(userToken);
         }
       } catch (err) {
         console.error("Token check error:", err);
@@ -37,7 +38,6 @@ export const AuthProvider = ({ children }) => {
     };
 
     checkToken();
-    setAuthToken(userToken);
   }, []);
 
   return (
