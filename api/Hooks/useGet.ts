@@ -35,6 +35,7 @@ export function createGetQueryHook<
 
     const queryFn = async (): Promise<TData> => {
       let url = endpoint;
+      console.log("Fetching URL:", url);
       if (params?.route) {
         url = Object.entries(params.route).reduce(
           (acc, [key, value]) => acc.replaceAll(`:${key}`, String(value)),
@@ -63,10 +64,10 @@ export function createGetQueryHook<
     };
 
     const query = useQuery({
-      queryKey: [...queryKey],
+      queryKey: [...queryKey, params?.query, params?.route],
       queryFn,
+      enabled: !!params?.query?.animeId,
     });
-
     useEffect(() => {
       if (query.isSuccess) {
         onSuccess?.(query.data, queryClient);

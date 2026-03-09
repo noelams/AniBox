@@ -24,9 +24,9 @@ export const axiosInstanceMal = axios.create({
 // Call this once after login / token changes
 export function setAuthToken(token: string | null) {
   if (token) {
-    axiosInstanceBackend.defaults.headers.common["authorization"] =
+    axiosInstanceBackend.defaults.headers.common["Authorization"] =
       `Bearer ${token}`;
   } else {
-    delete axiosInstanceBackend.defaults.headers.common["authorization"];
+    delete axiosInstanceBackend.defaults.headers.common["Authorization"];
   }
 }
