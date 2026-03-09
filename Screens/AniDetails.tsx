@@ -58,35 +58,37 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
 
   const queryClient = useQueryClient();
   const [paramsId, setParamsId] = useState(null);
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const scrollRef = useRef(null);
-
-  const snapPoints = useMemo(() => ["75%"], []);
-
-  const { data: logResponse, isLoading } = useQuery({
-    queryKey: ["anime-log", animeId],
-    queryFn: () => handleLoadLog(animeId, userToken),
-  });
 
   const useGetAnimeData = createGetQueryHook<AnimeDataType>({
     endpoint: `/anime/${animeId}`,
-    queryKey: [`anime-data-${animeId}`],
+    queryKey: ["anime-data", { animeId: animeId }],
     requestDestination: "MAL",
   });
+
+  const useLoadLogData = createGetQueryHook<any>({
+    endpoint: `/api/anime-log`,
+    requestDestination: "BACKEND",
+    queryKey: ["anime-log", { animeId: animeId }],
+  });
+
+  const { data: logResponse, isLoading: isLoadingLogResponse } = useLoadLogData(
+    {
+      query: {
+        animeId: animeId,
+      },
+    },
+  );
 
   const {
     data: animeData,
     isLoading: animeDataIsloading,
     isError: animeDataIsError,
-    error,
   } = useGetAnimeData({
     query: {
       fields:
         "title,main_picture,start_date,synopsis,mean,nsfw,status,num_episodes,average_episode_duration,related_anime,recommendations,studios",
     },
   });
-
-  console.log("custom hook anime data", animeData, error);
 
   const {
     title,
@@ -102,25 +104,6 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
     recommendations,
     studios,
   } = animeData ?? {}; // useQuery initially returns undefined before populating animeData
-
-  const handleLoadLog = async (animeId: number, userToken: string) => {
-    const fetchLogData = await fetch(
-      `${backendUrl}/api/anime-log?animeId=${animeId}`,
-      {
-        method: "GET",
-        headers: {
-          authorization: `Bearer ${userToken}`,
-          "content-type": "application/json",
-        },
-      },
-    );
-
-    if (!fetchLogData.ok) {
-      throw new Error(`Error fetching log: ${fetchLogData.status}`);
-    }
-    const logData = await fetchLogData.json();
-    return logData && Object.keys(logData).length > 0 ? logData : null;
-  };
 
   const handleCreateLog = async () => {
     try {
