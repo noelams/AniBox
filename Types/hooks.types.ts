@@ -30,7 +30,7 @@ export interface CreateQueryHookArgs {
   };
 }
 
-export interface CreatePostMutationHookArgs {
+export interface CreatePostMutationHookArgs<TData, TResponse> {
   endpoint: string;
   requestDestination: "MAL" | "BACKEND";
   onSuccess?: (data: any, variables: any, queryClient: QueryClient) => void;
@@ -44,3 +44,17 @@ export interface CreatePostMutationHookArgs {
   customHeaders?: Record<string, string>;
   mutationOptions?: any;
 }
+
+export type CreateLogPayload = {
+  status: "want to watch" | "watching" | "watched";
+  animeId: number;
+  review: string;
+  score: number;
+};
+
+export type CreateLogResponse = {
+  savedLog: {
+    _id: string;
+  };
+  message: string;
+};

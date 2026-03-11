@@ -38,6 +38,8 @@ import { AnimeDataType, AnimeLogData } from "../Types/animedata.types";
 import { AniDetailsScreenProps } from "../Types/navigation.types";
 import LogModal from "../Components/LogModal";
 import { createGetQueryHook } from "../api/Hooks/useGet";
+import { createPostMutationHook } from "../api/Hooks/usePost";
+import { CreateLogPayload, CreateLogResponse } from "../Types/hooks.types";
 
 const AniDetails = ({ route }: AniDetailsScreenProps) => {
   const animeId = route.params.id;
@@ -71,13 +73,27 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
     queryKey: ["anime-log", { animeId: animeId }],
   });
 
-  const { data: logResponse, isLoading: isLoadingLogResponse } = useLoadLogData(
-    {
-      query: {
-        animeId: animeId,
-      },
+  const useCreateLog = createPostMutationHook<
+    CreateLogPayload,
+    CreateLogResponse
+  >({
+    endpoint: "/api/anime-log",
+    requestDestination: "BACKEND",
+  });
+
+  const useAddToFavorites = createPostMutationHook({
+    endpoint: "/api/favorites",
+    requestDestination: "BACKEND",
+  });
+
+  const { mutateAsync, isPending: isCreating } = useCreateLog();
+  const { mutateAsync: mutateFavorite } = useAddToFavorites();
+
+  const { data: logResponse } = useLoadLogData({
+    query: {
+      animeId: animeId,
     },
-  );
+  });
 
   const {
     data: animeData,
@@ -107,30 +123,24 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
 
   const handleCreateLog = async () => {
     try {
-      const data = {
+      const payload = {
         status: logData.status,
-        animeId: animeId,
+        animeId,
         review: logData.review,
         score: logData.score,
       };
-      const sendData = await fetch(`${backendUrl}/api/anime-log`, {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${userToken}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
 
-      const response = await sendData.json();
-      if (sendData.ok) {
-        setParamsId(response.savedLog._id);
-        return response;
-      } else {
-        throw new Error(response.message || "Failed to create log");
-      }
+      const response = await mutateAsync(payload);
+      queryClient.invalidateQueries({ queryKey: ["anime-log", animeId] });
+      setModalIsVisible(false);
+      showSuccessToast();
+
+      setParamsId(response.savedLog._id);
     } catch (err) {
-      throw err;
+      setModalIsVisible(false);
+      showErrorToast();
+      console.error(err);
+      throw new Error("Failed to create log");
     }
   };
 
@@ -188,24 +198,14 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
   const handleAddToFavorites = async () => {
     try {
       setIsFavoritesLoading(true);
-      const res = await fetch(`${backendUrl}/api/favorites`, {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${userToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ animeId: animeId }),
+      const response = await mutateFavorite({ animeId: animeId });
+      setLogData((prev) => {
+        return { ...prev, hasFavorite: true };
       });
-      const data = await res.json();
-      if (res.ok) {
-        setLogData((prev) => {
-          return { ...prev, hasFavorite: true };
-        });
-      } else {
-        console.error("Failed to add to favorites:", data);
-      }
+      return response;
     } catch (err) {
       console.error("Error fetching favorites IDs:", err);
+      throw new Error(err);
     } finally {
       setIsFavoritesLoading(false);
     }
@@ -275,19 +275,6 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
     });
   };
 
-  const { mutateAsync: createLog, isPending: isCreating } = useMutation({
-    mutationFn: handleCreateLog,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["anime-log", animeId] });
-      setModalIsVisible(false);
-      showSuccessToast();
-    },
-    onError: () => {
-      setModalIsVisible(false);
-      showErrorToast();
-    },
-  });
-
   const { mutateAsync: updateLog, isPending: isUpdating } = useMutation({
     mutationFn: handleUpdateLog,
     onSuccess: () => {
@@ -336,7 +323,7 @@ const AniDetails = ({ route }: AniDetailsScreenProps) => {
         logData={logData}
         setLogData={setLogData}
         hasLog={hasLog}
-        onSubmit={hasLog ? updateLog : createLog}
+        onSubmit={hasLog ? updateLog : handleCreateLog}
         isLoading={isCreating || isUpdating}
       />
       <BackButton
