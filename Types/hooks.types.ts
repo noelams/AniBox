@@ -1,3 +1,4 @@
+//change any types
 import { QueryClient } from "@tanstack/react-query";
 
 type QueryKey =
@@ -27,4 +28,19 @@ export interface CreateQueryHookArgs {
     cacheTime?: number;
     staleTime?: number;
   };
+}
+
+export interface CreatePostMutationHookArgs {
+  endpoint: string;
+  requestDestination: "MAL" | "BACKEND";
+  onSuccess?: (data: any, variables: any, queryClient: QueryClient) => void;
+  onError?: (error: Error, variables: any, queryClient: QueryClient) => void;
+  onSettled?: (
+    data: any,
+    error: Error | null,
+    variables: any,
+    queryClient: QueryClient,
+  ) => void;
+  customHeaders?: Record<string, string>;
+  mutationOptions?: any;
 }
