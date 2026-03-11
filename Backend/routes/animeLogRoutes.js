@@ -6,7 +6,6 @@ const Favorite = require("../models/Favorites");
 
 router.post("/", verifyToken, async (req, res) => {
   const { animeId, status, review, score } = req.body;
-  console.log("request body:", req.body);
 
   if (!status) {
     return res.status(400).json({ message: "status  required", ok: false });
@@ -107,7 +106,7 @@ router.put("/:id", verifyToken, async (req, res) => {
     const updated = await AnimeLog.findOneAndUpdate(
       { _id: req.params.id, userId: req.user._id },
       req.body,
-      { new: true }
+      { new: true },
     );
     if (!updated)
       return res

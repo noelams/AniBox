@@ -58,14 +58,15 @@ export function createGetQueryHook<
 
       const headers = {
         ...params?.headers,
-        ...(requestDestination ? { Authorization: `Bearer ${userToken}` } : {}),
+        ...(requestDestination === "BACKEND"
+          ? { Authorization: `Bearer ${userToken}` }
+          : {}),
       };
       const axiosInstance =
         requestDestination === "BACKEND"
           ? axiosInstanceBackend
           : axiosInstanceMal;
       const response = await axiosInstance.get(url, { headers });
-      console.log("Fetching new URL:", url);
       return response.data as TData;
     };
 
