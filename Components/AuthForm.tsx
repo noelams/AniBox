@@ -51,6 +51,34 @@ const AuthForm = ({
       Alert.alert("Missing Field", `Please fill in your ${emptyField[0]}`);
       return;
     }
+
+    // Validate username/name - max 20 characters
+    if (formData.username && formData.username.length > 20) {
+      Alert.alert(
+        "Invalid Username",
+        "Username must be 20 characters or less",
+      );
+      return;
+    }
+
+    // Validate email format
+    if (formData.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        Alert.alert("Invalid Email", "Please enter a valid email address");
+        return;
+      }
+    }
+
+    // Validate password - min 8 characters
+    if (formData.password && formData.password.length < 8) {
+      Alert.alert(
+        "Weak Password",
+        "Password must be at least 8 characters long",
+      );
+      return;
+    }
+
     if (
       formData.password !== formData.confirmPassword &&
       formData.confirmPassword !== undefined
