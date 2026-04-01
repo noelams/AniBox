@@ -3,17 +3,30 @@ import AuthForm from "../Components/AuthForm";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Colors from "../Constants/Colors";
 import { AuthContext } from "../Context/AuthContext";
-import Constants from "expo-constants";
 import UserContext from "../Context/UserContext";
 import { AuthField } from "../Types/ui.types";
 import { SignInScreenProps } from "../Types/navigation.types";
-
-const configs = Constants?.expoConfig?.extra;
-const backendUrl = configs?.backendUrl;
+import { createPostMutationHook } from "../api/Hooks/usePost";
 
 const SignIn = ({ navigation }: SignInScreenProps) => {
   const { signIn } = useContext(AuthContext);
   const { saveUserInfo } = useContext(UserContext);
+
+  const useLogin = createPostMutationHook<any, any>({
+    endpoint: "/api/auth/login",
+    requestDestination: "BACKEND",
+    onSuccess: (data: any) => {
+      const userData = data.user;
+      saveUserInfo({
+        ...userData,
+      });
+      signIn(data.token);
+    },
+    onError: (error: Error) => {
+      throw new Error(error.message || "Login failed");
+    },
+  });
+  const { mutateAsync } = useLogin();
 
   const fields: AuthField[] = [
     {
@@ -36,22 +49,7 @@ const SignIn = ({ navigation }: SignInScreenProps) => {
   ];
 
   const handleLogin = async (formData: Record<string, string>) => {
-    console.log("Backend Url:", backendUrl);
-    const sendData = await fetch(`${backendUrl}/api/auth/login`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-
-    const response = await sendData.json();
-    const userData = response.user;
-    saveUserInfo({
-      ...userData,
-    });
-
-    if (!sendData.ok) throw new Error(response.message || "Login failed");
-
-    await signIn(response.token);
+    await mutateAsync(formData);
   };
 
   return (

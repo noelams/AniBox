@@ -16,9 +16,9 @@ const CoverPhoto = ({
     <View style={{ marginBottom: 50 }}>
       <Image
         source={{
-          uri: coverImage
-            ? coverImage
-            : "https://ui-avatars.com/api/?name=Noel+Inalegwu",
+          uri:
+            coverImage ||
+            "https://ui-avatars.com/api/?name=Noel+Inalegwu&background=random",
         }}
         style={styles.coverImage}
       />
