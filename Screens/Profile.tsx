@@ -79,9 +79,9 @@ const Profile = ({ navigation }: ProfileScreenProps) => {
         uri: imageUri,
         name: "photo.jpg",
         type: "image/jpeg",
-        profileOrCover: type,
       } as any);
 
+      formData.append("profileOrCover", type);
       formData.append("userId", userInfo?.id);
 
       const response = await fetch(`${backendUrl}/api/upload-profile`, {

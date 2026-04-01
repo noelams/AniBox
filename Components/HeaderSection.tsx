@@ -11,11 +11,11 @@ import AppText from "./AppText";
 import Colors from "../Constants/Colors";
 import { useNavigation } from "@react-navigation/native";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
-import { SideDrawerParamList } from "../Types/navigation.types";
+import { SideDrawerParamlist } from "../Types/navigation.types";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const HeaderSection = ({ profileImage, profileName }: HeaderSectionProps) => {
-  const navigation = useNavigation<DrawerNavigationProp<SideDrawerParamList>>();
+  const navigation = useNavigation<DrawerNavigationProp<SideDrawerParamlist>>();
   return (
     <View style={styles.container}>
       <View style={styles.headerContent}>
@@ -34,7 +34,7 @@ const HeaderSection = ({ profileImage, profileName }: HeaderSectionProps) => {
           source={{
             uri: profileImage
               ? profileImage
-              : "https://ui-avatars.com/api/?name=Noel+Inalegwu",
+              : "https://ui-avatars.com/api/?name=Noel+Inalegwu&background=random",
           }}
           style={styles.coverPhoto}
         />

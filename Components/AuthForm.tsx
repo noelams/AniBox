@@ -54,15 +54,12 @@ const AuthForm = ({
 
     // Validate username/name - max 20 characters
     if (formData.username && formData.username.length > 20) {
-      Alert.alert(
-        "Invalid Username",
-        "Username must be 20 characters or less",
-      );
+      Alert.alert("Invalid Username", "Username must be 20 characters or less");
       return;
     }
 
     // Validate email format
-    if (formData.email) {
+    if (formData.email && title !== "Login") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
         Alert.alert("Invalid Email", "Please enter a valid email address");

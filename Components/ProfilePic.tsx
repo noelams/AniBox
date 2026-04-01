@@ -20,7 +20,7 @@ const ProfilePic = ({ image, onEdit, displayName }: ProfilePicProps) => {
             source={{
               uri: image
                 ? image
-                : "https://ui-avatars.com/api/?name=Noel+Inalegwu",
+                : "https://ui-avatars.com/api/?name=Noel+Inalegwu&background=random",
             }}
             style={styles.image}
           />
