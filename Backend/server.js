@@ -1,12 +1,9 @@
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const animeLogRoutes = require("./routes/animeLogRoutes");
 const favoritesRoutes = require("./routes/favoritesRoutes");
 const profileRoutes = require("./routes/profileRoutes");
-
-dotenv.config();
 
 const connectDB = async () => {
   try {
