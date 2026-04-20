@@ -6,7 +6,6 @@ const cloudinary = require("cloudinary");
 const path = require("path");
 const User = require("../models/User");
 const verifyToken = require("../middleware/authMiddleware");
-require("dotenv").config();
 
 const router = require("express").Router();
 
