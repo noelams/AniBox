@@ -42,3 +42,4 @@ yarn-error.*
 *.json
 firebase.json
 package-lock.json
+./Backend/package-lock.json
